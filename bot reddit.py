@@ -16,7 +16,7 @@ reddit = praw.Reddit(client_id='fRymMJayGXty1g',
 client = discord.Client()
 
 #---Variables--
-TOKEN = "NjE4ODY4NjI2OTQ1OTk4ODQ5.XZUb7Q.gMYY_4SQAbnTfarpRGb0DByDGF4"
+TOKEN = "NjE4ODY4NjI2OTQ1OTk4ODQ5.XZUlCQ.k6FHbYk9Ur1JKGhoa8kVt-5IsOg"
 reddit_ex = "r/"
 reddit_ex2 = "/r/"
 BOT_NAME = "ReLink"
@@ -38,27 +38,29 @@ async def on_message(message):
         sub = " ".join(args[0:1])
         l.info(str(message.author) + " tried to link r/" + sub + ".")
         
-        em_title = "[r/" + sub + "](https://reddit.com/r/" + sub + ")"
-        em = discord.Embed(description=em_title, color=0xFF4301)
-        em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
-        await message.channel.send(embed=em)
+        subreddit_search = reddit.subreddits.search_by_name(sub, include_nsfw=True, exact=False)
+        if sub in subreddit_search:
+            nsfw = "\n:warning:Subreddit is NSFW!:warning:"
 
+        subreddit_search2 = reddit.subreddits.search_by_name(sub, include_nsfw=False, exact=False)
+        if sub in subreddit_search2:
+            nsfw = ""
+
+        else:
+            em_title = ":warning:Subreddit not found!"
+            em = discord.Embed(title = em_title, color=0xFF4301)
+            em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
+            await message.channel.send(embed=em)
         try:
             subreddit = reddit.subreddit(sub)
-            l.debug("Subreddit:")
-            l.debug("r/" + subreddit.display_name)  # Output: redditdev
-            l.debug("Title:")
-            l.debug(subreddit.title)         # Output: reddit Development
-            l.debug("Description:")
-            l.debug(subreddit.description)   # Output: A subreddit for discussion of ... 
-            em_sub_title = "[r/" + subreddit.display_name + "](https://reddit.com/r/" + subreddit.display_name + ")"
+
+            em_sub_title = "[r/" + subreddit.display_name + "](https://reddit.com/r/" + subreddit.display_name + ")" + nsfw
             em_title = subreddit.title
             em = discord.Embed(title = em_title, description=em_sub_title, color=0xFF4301)
             em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
             await message.channel.send(embed=em)
         except:
-            msg = "Failed to get subreddit info. Not a real subreddit?"
-            await message.channel.send(msg)
+            pass
 
 
     elif client.user.mentioned_in(message) and message.mention_everyone is False:
@@ -67,6 +69,7 @@ async def on_message(message):
             em = discord.Embed(description=em_title, color=0xFFFFFF)
             em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
             await message.channel.send(embed=em)
+
             
             
         
