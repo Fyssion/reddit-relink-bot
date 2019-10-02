@@ -50,6 +50,7 @@ async def on_message(message):
             em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
             await message.channel.send(embed=em)
             l.warning("Subreddt " + sub + " does not exist!")
+        
         try:
             subreddit = reddit.subreddit(sub)
 

@@ -18,6 +18,8 @@ print(subreddit.description)   # Output: A subreddit for discussion of ...
 sub = input("Type subreddit here: ")
 subreddit_search = reddit.subreddits.search_by_name(sub, include_nsfw=True, exact=False)
 print(subreddit_search)
+if sub in subreddit_search:
+    print("success")
 '''
 subreddit = reddit.subreddit(subreddit_search)
 print("Subreddit:")
