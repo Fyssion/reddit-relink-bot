@@ -7,7 +7,7 @@ import praw
 client = discord.Client()
 
 #---Variables--
-TOKEN = "NjE4ODY4NjI2OTQ1OTk4ODQ5.XXA5SQ.PmSUjyvi1zHzjxyjXPBbD8WLI6c"
+TOKEN = "NjE4ODY4NjI2OTQ1OTk4ODQ5.XZUb7Q.gMYY_4SQAbnTfarpRGb0DByDGF4"
 reddit = "r/"
 reddit2 = "/r/"
 BOT_NAME = "ReLink"
