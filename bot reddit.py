@@ -20,10 +20,8 @@ TOKEN = "NjE4ODY4NjI2OTQ1OTk4ODQ5.XZUlCQ.k6FHbYk9Ur1JKGhoa8kVt-5IsOg"
 reddit_ex = "r/"
 reddit_ex2 = "/r/"
 BOT_NAME = "ReLink"
-VERSION_NUMBER = "0.0.1"
+VERSION_NUMBER = "0.1.0"
 ICON = "https://media.discordapp.net/attachments/617425917106716689/617459186175049728/logo.png?width=457&height=457"
-MODERATOR_ID = 617730874221527040
-MODERATOR_ID_2 = 617730668268617729
 
 #--Embed--
 
@@ -51,6 +49,8 @@ async def on_message(message):
             em = discord.Embed(title = em_title, color=0xFF4301)
             em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
             await message.channel.send(embed=em)
+            l.warning("Subreddt " + sub + " does not exist!")
+        
         try:
             subreddit = reddit.subreddit(sub)
 
