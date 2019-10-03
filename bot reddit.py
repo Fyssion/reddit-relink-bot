@@ -1,7 +1,4 @@
 import discord
-from discord.ext import commands
-import asyncio
-from asyncio import sleep
 import praw
 import coloredlogs, logging
 
