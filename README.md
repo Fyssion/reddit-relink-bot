@@ -6,14 +6,10 @@ Don't attempt to run it because it won't work.
 
 Info about Reddit ReLink for Discord
 
-## Download
-
-Just download or clone the repo, then run the Python file.
-
-
-## Setup
-
-In the config.yml file, just fill in all the required values.
+## Libraries
+discord.py - [Docs](https://discordpy.readthedocs.io) | [GitHub](https://github.com/Rapptz/discord.py) | [Discord Server](https://discord.gg/r3sSKJJ)
+PRAW - [Docs](https://praw.readthedocs.io/en/latest/) | [GitHub](https://github.com/praw-dev/praw)
+Coloredlogs - [Docs](https://coloredlogs.readthedocs.io/en/latest/ | [GitHub](https://github.com/xolox/python-coloredlogs)
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
