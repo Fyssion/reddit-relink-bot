@@ -6,14 +6,14 @@ import coloredlogs, logging
 l = logging.getLogger(__name__)
 coloredlogs.install(level='DEBUG', logger=l, fmt='(%(asctime)s) %(levelname)s %(message)s', datefmt='%H:%M:%S')
 
-reddit = praw.Reddit(client_id='fRymMJayGXty1g',
-                     client_secret='xMt_lwbyy6tMDyYyWZ47zdeyVPY',
+reddit = praw.Reddit(client_id='REDACTED',
+                     client_secret='REDACTED',
                      user_agent='my user agent')
 
 client = discord.Client()
 
 #---Variables--
-TOKEN = "NjE4ODY4NjI2OTQ1OTk4ODQ5.XZVFfw.cSS0Hf5xN6e2YbokYIwciZ359QA"
+TOKEN = "REDACTED"
 reddit_ex = "r/"
 reddit_ex2 = "/r/"
 BOT_NAME = "Reddit ReLink"
