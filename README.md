@@ -8,7 +8,9 @@ Info about Reddit ReLink for Discord
 
 ## Libraries
 discord.py - [Docs](https://discordpy.readthedocs.io) | [GitHub](https://github.com/Rapptz/discord.py) | [Discord Server](https://discord.gg/r3sSKJJ)
+
 PRAW - [Docs](https://praw.readthedocs.io/en/latest/) | [GitHub](https://github.com/praw-dev/praw)
+
 Coloredlogs - [Docs](https://coloredlogs.readthedocs.io/en/latest/) | [GitHub](https://github.com/xolox/python-coloredlogs)
 
 ## Contributing
