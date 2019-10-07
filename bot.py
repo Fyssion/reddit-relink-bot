@@ -5,6 +5,7 @@
 import discord
 import praw
 import coloredlogs, logging
+import yaml
 
 
 # Colored logs install
@@ -12,10 +13,20 @@ l = logging.getLogger(__name__)
 coloredlogs.install(level='DEBUG', logger=l, fmt='(%(asctime)s) %(levelname)s %(message)s', datefmt='%H:%M:%S')
 
 
+#Config.yml load
+with open("config.yml", 'r') as config:
+    try:
+        data = yaml.safe_load(config)
+
+    except yaml.YAMLError as exc:
+        l.critical("Could not load config.yml")
+        print(exc)
+
+
 # Reddit PRAW login
-reddit = praw.Reddit(client_id='REDACTED',
-                     client_secret='REDACTED',
-                     user_agent='my user agent')
+reddit = praw.Reddit(client_id = data['reddit_client_id'],
+                     client_secret = data['reddit_client_secret'],
+                     user_agent = 'my user agent')
 
 
 # Discord.py client
@@ -23,7 +34,7 @@ client = discord.Client()
 
 
 # Variables
-TOKEN = "REDACTED"
+TOKEN = data['discord_token']
 reddit_ex = "r/"
 reddit_ex2 = "/r/"
 BOT_NAME = "Reddit ReLink"
@@ -48,6 +59,7 @@ async def on_message(message):
         afterslash = " ".join(args[1:])
         args = afterslash.split(" ")
         sub = " ".join(args[0:1])
+        l.debug(type(sub))
 
         l.info(str(message.author) + " tried to link to Subreddit " + sub + ".")
 
@@ -78,6 +90,7 @@ async def on_message(message):
             await message.channel.send(embed=em)
             l.warning("Subreddit '" + sub + "' does not exist!")
             issub = False
+            isnsfw = ""
 
         # Fetches subreddit's name and display name only if subreddit was found in search
         if issub == True:
@@ -90,6 +103,7 @@ async def on_message(message):
             em.set_thumbnail(url = subreddit.icon_img)
             em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
             await message.channel.send(embed=em)
+            isnsfw = ""
 
     # If the bot gets mentioned
     elif client.user.mentioned_in(message) and message.mention_everyone is False:

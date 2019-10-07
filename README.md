@@ -13,6 +13,8 @@ PRAW - [Docs](https://praw.readthedocs.io/en/latest/) | [GitHub](https://github.
 
 Coloredlogs - [Docs](https://coloredlogs.readthedocs.io/en/latest/) | [GitHub](https://github.com/xolox/python-coloredlogs)
 
+[PyYAML](https://pyyaml.org/)
+
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
