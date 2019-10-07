@@ -4,7 +4,12 @@ Don't attempt to run it because it won't work.
 
 # Reddit ReLink
 
-Info about Reddit ReLink for Discord
+Reddit ReLink is a Discord bot that relinks Subreddit 'links' users have sent.
+
+For example:
+> Haha noob r/woooosh
+
+The bot replies with a link to 'woooosh' and the subreddit icon. 
 
 ## Libraries
 discord.py - [Docs](https://discordpy.readthedocs.io) | [GitHub](https://github.com/Rapptz/discord.py) | [Discord Server](https://discord.gg/r3sSKJJ)
