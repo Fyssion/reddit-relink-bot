@@ -59,7 +59,6 @@ async def on_message(message):
         afterslash = " ".join(args[1:])
         args = afterslash.split(" ")
         sub = " ".join(args[0:1])
-        l.debug(type(sub))
 
         l.info(str(message.author) + " tried to link to Subreddit " + sub + ".")
 
