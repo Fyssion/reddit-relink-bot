@@ -6,7 +6,7 @@ Don't attempt to run it because it won't work.
 
 Reddit ReLink is a Discord bot that relinks Subreddit 'links' users have sent.
 
-##### For example:
+For example:
 
 ![Example](https://i.imgur.com/n79dcfu.png)
 
