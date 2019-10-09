@@ -1,6 +1,4 @@
-# THIS REPO IS NOT FINISHED.
-
-Don't attempt to run it because it won't work.
+# THIS BOT IS NOT FINISHED.
 
 # Reddit ReLink
 
