@@ -39,7 +39,7 @@ reddit_ex = "r/"
 reddit_ex2 = "/r/"
 BOT_NAME = "Reddit ReLink"
 VERSION_NUMBER = "0.1.0"
-ICON = "https://cdn.discordapp.com/attachments/402518339215294471/629138727322517507/user-interface-36-512.png"
+ICON = "https://media.discordapp.net/attachments/402518339215294471/631655810048589845/icon.png?width=449&height=449"
 isnsfw = ""
 wosh = ""
 reddit_color = 0xFF4301
@@ -107,8 +107,9 @@ async def on_message(message):
     # If the bot gets mentioned
     elif client.user.mentioned_in(message) and message.mention_everyone is False:
             l.info("Mentioned by " + str(message.author))
-            em_title = "Hey there, " + message.author.mention + "! I'm a bot that detects any Reddit links and relinks them in clickable fashion!\n[Visit my GitHub for more info.](https://github.com/incompetenator/discord-relink)"
-            em = discord.Embed(description=em_title, color=0xFFFFFF)
+            
+            em_title = "Hey there, " + message.author.mention + "!\nI'm a bot that detects any Reddit links and relinks them in clickable fashion!\n[Visit my GitHub Repository for more info.](https://github.com/incompetenator/reddit-relink-bot)"
+            em = discord.Embed(description=em_title, color=reddit_color)
             em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
             await message.channel.send(embed=em)
 
