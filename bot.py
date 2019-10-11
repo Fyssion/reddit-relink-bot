@@ -123,7 +123,10 @@ async def on_message(message):
             em_title = "Hey there, " + message.author.mention + "!\nI'm a bot that detects any Reddit links and relinks them in clickable fashion!\n[Visit my GitHub Repository for more info.](https://github.com/incompetenator/reddit-relink-bot)"
             em = discord.Embed(description=em_title, color=reddit_color)
             em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
-            await message.channel.send(embed=em)
+            try:
+                await message.channel.send(embed=em)
+            except discord.errors.Forbidden:
+                l.error("Bot does not have permission to send messages in channel: '" + str(message.channel) + "'")
 
             
             
