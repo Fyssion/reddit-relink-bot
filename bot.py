@@ -27,6 +27,8 @@ with open("config.yml", 'r') as config:
 reddit = praw.Reddit(client_id = data['reddit_client_id'],
                      client_secret = data['reddit_client_secret'],
                      user_agent = 'my user agent')
+if reddit.read_only == True:
+    l.info("Logged into Reddit")
 
 
 # Discord.py client
@@ -60,7 +62,7 @@ async def on_message(message):
         args = afterslash.split(" ")
         sub = " ".join(args[0:1])
 
-        l.info(str(message.author) + " tried to link to Subreddit " + sub + ".")
+        l.info(str(message.author) + " tried to link to '" + sub + "'")
 
         wosh = ""
 
@@ -86,8 +88,13 @@ async def on_message(message):
             em_disc = "r/" + sub + " is not a subreddit." + isnsfw + wosh
             em = discord.Embed(title = em_title, description = em_disc, color=warning_color)
             em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
-            await message.channel.send(embed=em)
             l.warning("Subreddit '" + sub + "' does not exist!")
+            
+            try:
+                await message.channel.send(embed=em)
+            except discord.errors.Forbidden:
+                l.error("Bot does not have permission to send messages in channel: '" + str(message.channel) + "'")
+            
             issub = False
             isnsfw = ""
 
@@ -101,7 +108,12 @@ async def on_message(message):
             em = discord.Embed(title = em_title, description=em_sub_title, url = em_url, color=reddit_color)
             em.set_thumbnail(url = subreddit.icon_img)
             em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
-            await message.channel.send(embed=em)
+
+            try:
+                await message.channel.send(embed=em)
+            except discord.errors.Forbidden:
+                l.error("Bot does not have permission to send messages in channel: '" + str(message.channel) + "'")
+                
             isnsfw = ""
 
     # If the bot gets mentioned
@@ -120,11 +132,16 @@ async def on_message(message):
 # Bot is ready message (not the same as logged in)
 @client.event
 async def on_ready():
+    global ICON
+
     l.info("\nLogged in as\n" + client.user.name + "\n" + str(client.user.id) + "\n------")
 
     # Set bot's activity (some call it status) to "Watching Reddit"
     activity = discord.Activity(name="Reddit", type=discord.ActivityType.watching)
     await client.change_presence(activity=activity)
+
+    ICON = client.user.avatar_url
+
 
 # Runs bot (it's not rocket science)
 client.run(TOKEN)
