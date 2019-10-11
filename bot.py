@@ -6,6 +6,7 @@ import discord
 import praw
 import coloredlogs, logging
 import yaml
+import re
 
 
 # Colored logs install
@@ -56,7 +57,17 @@ async def on_message(message):
     global isnsfw
     global wosh
     global issub
-    if reddit_ex in message.content: # My stupid detection system (I'm too lazy to rewrite it)
+    import re
+
+    # Direct Link Detection
+    msg = message.content
+    urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', msg) # Finds all urls in the message
+
+    if len(urls) > 0: # If the message has any urls, the bot doesnt relink the subreddit
+        msg = ""
+
+
+    if reddit_ex in msg: # My stupid detection system (I'm too lazy to rewrite it)
         args = message.content.split("r/")
         afterslash = " ".join(args[1:])
         args = afterslash.split(" ")
