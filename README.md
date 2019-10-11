@@ -1,5 +1,9 @@
 # THIS BOT IS NOT FINISHED.
 
+Want to help bug test this bot?
+
+[Invite Reddit ReLink to your server!](https://discordapp.com/api/oauth2/authorize?client_id=618868626945998849&permissions=18432&scope=bot)
+
 # Reddit ReLink
 
 Reddit ReLink is a Discord bot that relinks Subreddit 'links' users have sent.
