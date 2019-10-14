@@ -1,5 +1,7 @@
 # Reddit ReLink - THIS BOT IS NOT FINISHED
 
+## Invite ReLink
+
 Want to help bug test this bot?
 
 [Invite Reddit ReLink to your server!](https://discordapp.com/api/oauth2/authorize?client_id=618868626945998849&permissions=18432&scope=bot) Note: This bot is hosted for free on Heroku, so it may not be 100% reliable.
