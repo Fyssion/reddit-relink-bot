@@ -57,7 +57,6 @@ async def on_message(message):
     global isnsfw
     global wosh
     global issub
-    import re
 
     # Direct Link Detection
     msg = message.content
