@@ -93,7 +93,7 @@ async def on_message(message):
             issub = True
 
         # If the subreddit is not found in any searches
-        else:
+        if issub == False:
             em_title = ":warning:Subreddit not found!"
             em_disc = "r/" + sub + " is not a subreddit." + isnsfw + wosh
             em = discord.Embed(title = em_title, description = em_disc, color=warning_color)
@@ -109,7 +109,7 @@ async def on_message(message):
             isnsfw = ""
 
         # Fetches subreddit's name and display name only if subreddit was found in search
-        if issub == True:
+        elif issub == True:
             subreddit = reddit.subreddit(sub)
 
             em_sub_title = "[r/" + subreddit.display_name + "](https://reddit.com/r/" + subreddit.display_name + ")" + isnsfw + wosh
@@ -123,7 +123,8 @@ async def on_message(message):
                 await message.channel.send(embed=em)
             except discord.errors.Forbidden:
                 l.error("Bot does not have permission to send messages in channel: '" + str(message.channel) + "'")
-                
+            
+            issub = False
             isnsfw = ""
 
     # If the bot gets mentioned
@@ -140,7 +141,7 @@ async def on_message(message):
 
             
             
-        
+
 
 # Bot is ready message (not the same as logged in)
 @client.event
