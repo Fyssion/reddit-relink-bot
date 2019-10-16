@@ -155,7 +155,7 @@ async def on_message(message):
         except:
             issub = False
 
-        # If the subreddit is not found in any searches
+        # If the user does not exist
         if issub == False:
             em_title = ":warning:User not found!"
             em_disc = "u/" + usr + " is not a user." + isnsfw + wosh
@@ -171,7 +171,7 @@ async def on_message(message):
             issub = False
             isnsfw = ""
 
-        # Fetches subreddit's name and display name only if subreddit was found in search
+        # Fetches user and sends info
         elif issub == True:
             user = reddit.redditor(usr)
 
