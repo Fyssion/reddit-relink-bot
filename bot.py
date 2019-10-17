@@ -42,7 +42,7 @@ TOKEN = data['discord_token']
 reddit_ex = "r/"
 reddit_ex2 = "/r/"
 BOT_NAME = "Reddit ReLink"
-VERSION_NUMBER = "0.3.0"
+VERSION_NUMBER = "0.3.1"
 ICON = "https://media.discordapp.net/attachments/402518339215294471/631655810048589845/icon.png?width=449&height=449"
 isnsfw = ""
 wosh = ""
