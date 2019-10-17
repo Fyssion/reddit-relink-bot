@@ -42,7 +42,7 @@ TOKEN = data['discord_token']
 reddit_ex = "r/"
 reddit_ex2 = "/r/"
 BOT_NAME = "Reddit ReLink"
-VERSION_NUMBER = "0.3.1"
+VERSION_NUMBER = "0.3.2"
 ICON = "https://media.discordapp.net/attachments/402518339215294471/631655810048589845/icon.png?width=449&height=449"
 isnsfw = ""
 wosh = ""
@@ -121,7 +121,15 @@ async def on_message(message):
             em_url = "https://reddit.com/r/" + subreddit.display_name
             em = discord.Embed(title = em_title, description=em_sub_title, url = em_url, color=reddit_color)
             em.add_field(name = "Subscribers:", value = str(subreddit.subscribers))
-            em.set_thumbnail(url = subreddit.icon_img)
+
+            # The next if/else statements are a bug patch. Sometimes, subreddit.icon_img returns None instead of a blank string.
+            # Disocrd will not accept this as a url, so I change None to a blank string
+            if subreddit.icon_img  == None:
+                ico_img = ""
+            else:
+                ico_img = subreddit.icon_img
+            
+            em.set_thumbnail(url = ico_img)
             em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
 
             try:
