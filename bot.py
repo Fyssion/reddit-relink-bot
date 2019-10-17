@@ -203,7 +203,7 @@ async def on_message(message):
     elif client.user.mentioned_in(message) and message.mention_everyone is False:
             l.info("Mentioned by " + str(message.author))
             
-            em_title = "Hey there, " + message.author.mention + "!\nI'm a bot that detects any Reddit links and relinks them in clickable fashion!\n[Visit my GitHub Repository for more info.](https://github.com/incompetenator/reddit-relink-bot)"
+            em_title = "Hey there, " + message.author.mention + "!\nI'm a bot that detects any Reddit links and relinks them in clickable fashion!\n\nI currently support relinking subreddits (`r/SUBREDDIT`) and users (`r/USER`).\n\n[Visit my GitHub Repository for more info.](https://github.com/incompetenator/reddit-relink-bot)"
             em = discord.Embed(description=em_title, color=reddit_color)
             em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
             try:
