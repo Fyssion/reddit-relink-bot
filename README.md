@@ -12,6 +12,10 @@ This bot is updated to the latest release of Reddit ReLink.
 
 Reddit ReLink is a Discord bot that relinks Subreddit 'links' users have sent.
 
+Reddit ReLink currently relinks subreddits (`r/SUBREDDIT`) and users (`u/USER`).
+
+Mention the bot for some basic info and a link back to here.
+
 For example:
 
 ![Example](https://i.imgur.com/HRdgadl.png)
