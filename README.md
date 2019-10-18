@@ -30,8 +30,22 @@ Coloredlogs - [Docs](https://coloredlogs.readthedocs.io/en/latest/) | [GitHub](h
 
 [PyYAML](https://pyyaml.org/)
 
+## Requirements
+
+**You must install Python and these libraries to run the bot.**
+
+I plan on adding an installer (ex. installer.py) that installs the required libraries for you.
+
+Python 3.7.4 (will update to 3.8 soon)
+
+discord.py==1.2.4
+
+praw
+
+coloredlogs
+
+pyyaml
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-Please make sure to update tests as appropriate.
