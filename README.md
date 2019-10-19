@@ -34,7 +34,7 @@ Coloredlogs - [Docs](https://coloredlogs.readthedocs.io/en/latest/) | [GitHub](h
 
 **You must install Python and these libraries to run the bot.**
 
-Install Python 3.7.4 (will update to 3.8 soon)
+Install Python 3.8.0
 
 I plan on adding an installer (ex. installer.py) that installs the required libraries for you.
 
