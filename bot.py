@@ -209,7 +209,7 @@ async def on_message(message):
     # If the bot gets mentioned
     elif client.user.mentioned_in(message) and message.mention_everyone is False:
         
-        if "logout" in message.content:
+        if message.content.startswith("logout"):
             owner_id = data['owner_id']
             if str(message.author.id) == owner_id:
                 msg = "Logging out :wave:"
