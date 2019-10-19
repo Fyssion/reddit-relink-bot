@@ -206,18 +206,29 @@ async def on_message(message):
             isnsfw = ""
 
 
-
     # If the bot gets mentioned
     elif client.user.mentioned_in(message) and message.mention_everyone is False:
-            l.info("Mentioned by " + str(message.author))
+        
+        if "logout" in message.content:
+            owner_id = data['owner_id']
+            if str(message.author.id) == owner_id:
+                msg = "Logging out :wave:"
+                await message.channel.send(msg)
+
+                await client.logout()
+
+                import sys
+                sys.exit()
+
+        l.info("Mentioned by " + str(message.author))
             
-            em_title = "Hey there, " + message.author.mention + "!\nI'm a bot that detects any Reddit links and relinks them in clickable fashion!\n\nI currently support relinking subreddits (`r/SUBREDDIT`) and users (`r/USER`).\n\n[Visit my GitHub Repository for more info.](https://github.com/incompetenator/reddit-relink-bot)"
-            em = discord.Embed(description=em_title, color=reddit_color)
-            em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
-            try:
-                await message.channel.send(embed=em)
-            except discord.errors.Forbidden:
-                l.error("Bot does not have permission to send messages in channel: '" + str(message.channel) + "'")
+        em_title = "Hey there, " + message.author.mention + "!\nI'm a bot that detects any Reddit links and relinks them in clickable fashion!\n\nI currently support relinking subreddits (`r/SUBREDDIT`) and users (`r/USER`).\n\n[Visit my GitHub Repository for more info.](https://github.com/incompetenator/reddit-relink-bot)"
+        em = discord.Embed(description=em_title, color=reddit_color)
+        em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
+        try:
+            await message.channel.send(embed=em)
+        except discord.errors.Forbidden:
+            l.error("Bot does not have permission to send messages in channel: '" + str(message.channel) + "'")
 
             
 
