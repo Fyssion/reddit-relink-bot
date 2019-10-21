@@ -11,7 +11,7 @@ import re
 
 # Colored logs install
 l = logging.getLogger(__name__)
-coloredlogs.install(level='DEBUG', logger=l, fmt='(%(asctime)s) %(levelname)s %(message)s', datefmt='%H:%M:%S')
+coloredlogs.install(level='DEBUG', logger=l, fmt='(%(asctime)s) %(levelname)s %(message)s', datefmt='%m/%d/%y - %H:%M:%S %Z')
 
 
 #Config.yml load
@@ -22,15 +22,26 @@ with open("config.yml", 'r') as config:
     except yaml.YAMLError as exc:
         l.critical("Could not load config.yml")
         print(exc)
+        import sys
+        sys.exit()
 
 
 # Reddit PRAW login
-reddit = praw.Reddit(client_id = data['reddit_client_id'],
-                     client_secret = data['reddit_client_secret'],
-                     user_agent = 'my user agent')
+try:
+    reddit = praw.Reddit(client_id = data['reddit_client_id'],
+                        client_secret = data['reddit_client_secret'],
+                        user_agent = 'my user agent')
+except:
+    l.critical("Failed to log into Reddit! Check if client id and secret are correct.")
+    import sys
+    sys.exit()
 
 if reddit.read_only == True:
     l.info("Logged into Reddit")
+else:
+    l.critical("Not logged into Reddit!")
+    import sys
+    sys.exit()
 
 
 # Discord.py client
@@ -212,6 +223,7 @@ async def on_message(message):
         if message.content.startswith("logout"):
             owner_id = data['owner_id']
             if str(message.author.id) == owner_id:
+                l.info("Logging out of Discord.")
                 msg = "Logging out :wave:"
                 await message.channel.send(msg)
 
@@ -222,7 +234,7 @@ async def on_message(message):
 
         l.info("Mentioned by " + str(message.author))
             
-        em_title = "Hey there, " + message.author.mention + "!\nI'm a bot that detects any Reddit links and relinks them in clickable fashion!\n\nI currently support relinking subreddits (`r/SUBREDDIT`) and users (`r/USER`).\n\n[Visit my GitHub Repository for more info.](https://github.com/incompetenator/reddit-relink-bot)"
+        em_title = "Hey there, " + message.author.mention + "!\nI'm a bot that detects any Reddit links and relinks them in clickable fashion!\n\nI currently support relinking subreddits (`r/SUBREDDIT`) and users (`u/USER`).\n\n[Visit my GitHub Repository for more info.](https://github.com/incompetenator/reddit-relink-bot)"
         em = discord.Embed(description=em_title, color=reddit_color)
         em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
         try:
