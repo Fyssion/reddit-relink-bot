@@ -40,7 +40,7 @@ I plan on adding an installer (ex. installer.py) that installs the required libr
 
 Install the following with PyPI (pip):
 
-`discord.py==1.2.4`
+`discord.py==1.2.5`
 
 `praw`
 
