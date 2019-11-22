@@ -1,4 +1,4 @@
-discord.py==1.2.4
+discord.py==1.2.5
 coloredlogs
 praw
 pyyaml
