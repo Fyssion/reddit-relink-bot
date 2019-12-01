@@ -8,6 +8,8 @@ import coloredlogs, logging
 import yaml
 import re
 
+from utils.utils import wait_for_deletion
+
 
 # Colored logs install
 l = logging.getLogger(__name__)
@@ -107,11 +109,14 @@ async def on_message(message):
             em_title = ":warning:Subreddit not found!"
             em_disc = "r/" + sub + " is not a subreddit." + isnsfw + wosh
             em = discord.Embed(title = em_title, description = em_disc, color=warning_color)
-            em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
+            em.set_footer(text = "This message auto-deletes in 30 seconds.", icon_url = ICON)
             l.warning("Subreddit '" + sub + "' does not exist!")
             
             try:
-                await message.channel.send(embed=em)
+                bot_message = await message.channel.send(embed=em)
+                client.loop.create_task(
+                    wait_for_deletion(bot_message, user_ids=(message.author.id,), client=client)
+                )
             except discord.errors.Forbidden:
                 l.error("Bot does not have permission to send messages in channel: '" + str(message.channel) + "'")
             
@@ -141,10 +146,13 @@ async def on_message(message):
                 ico_img = subreddit.icon_img
             
             em.set_thumbnail(url = ico_img)
-            em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
+            em.set_footer(text = "This message auto-deletes in 30 seconds.", icon_url = ICON)
 
             try:
-                await message.channel.send(embed=em)
+                bot_message = await message.channel.send(embed=em)
+                client.loop.create_task(
+                    wait_for_deletion(bot_message, user_ids=(message.author.id,), client=client)
+                )
             except discord.errors.Forbidden:
                 l.error("Bot does not have permission to send messages in channel: '" + str(message.channel) + "'")
             
@@ -179,11 +187,14 @@ async def on_message(message):
             em_title = ":warning:User not found!"
             em_disc = "u/" + usr + " is not a user." + isnsfw + wosh
             em = discord.Embed(title = em_title, description = em_disc, color=warning_color)
-            em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
+            em.set_footer(text = "This message auto-deletes in 30 seconds.", icon_url = ICON)
             l.warning("User '" + usr + "' does not exist!")
             
             try:
-                await message.channel.send(embed=em)
+                bot_message = await message.channel.send(embed=em)
+                client.loop.create_task(
+                    wait_for_deletion(bot_message, user_ids=(message.author.id,), client=client)
+                )
             except discord.errors.Forbidden:
                 l.error("Bot does not have permission to send messages in channel: '" + str(message.channel) + "'")
             
@@ -206,10 +217,13 @@ async def on_message(message):
             em = discord.Embed(title = em_title, description=em_sub_title, url = em_url, color=reddit_color)
             em.add_field(name = "Karma:", value = str(tkarma))
             em.set_thumbnail(url = user.icon_img)
-            em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
+            em.set_footer(text = "This message auto-deletes in 30 seconds.", icon_url = ICON)
 
             try:
-                await message.channel.send(embed=em)
+                bot_message = await message.channel.send(embed=em)
+                client.loop.create_task(
+                    wait_for_deletion(bot_message, user_ids=(message.author.id,), client=client)
+                )
             except discord.errors.Forbidden:
                 l.error("Bot does not have permission to send messages in channel: '" + str(message.channel) + "'")
             
@@ -234,11 +248,16 @@ async def on_message(message):
 
         l.info("Mentioned by " + str(message.author))
             
-        em_title = "Hey there, " + message.author.mention + "!\nI'm a bot that detects any Reddit links and relinks them in clickable fashion!\n\nI currently support relinking subreddits (`r/SUBREDDIT`) and users (`u/USER`).\n\n[Visit my GitHub Repository for more info.](https://github.com/incompetenator/reddit-relink-bot)"
+        em_title = "Hey there, " + message.author.mention + "!\nI'm a bot that detects any Reddit links and relinks them in clickable fashion!\
+            \n\nI currently support relinking subreddits (`r/SUBREDDIT`) and users (`u/USER`).\
+            \n\n[Visit my GitHub Repository for more info.](https://github.com/incompetenator/reddit-relink-bot)"
         em = discord.Embed(description=em_title, color=reddit_color)
-        em.set_footer(text = str(BOT_NAME) + " • Version " + VERSION_NUMBER, icon_url = ICON)
+        em.set_footer(text = "This message auto-deletes in 30 seconds.", icon_url = ICON)
         try:
-            await message.channel.send(embed=em)
+            bot_message = await message.channel.send(embed=em)
+            client.loop.create_task(
+                wait_for_deletion(bot_message, user_ids=(message.author.id,), client=client)
+            )
         except discord.errors.Forbidden:
             l.error("Bot does not have permission to send messages in channel: '" + str(message.channel) + "'")
 
