@@ -1,4 +1,4 @@
-# Reddit ReLink - THIS BOT IS NOT FINISHED
+# Reddit ReLink
 
 ## Invite ReLink
 
