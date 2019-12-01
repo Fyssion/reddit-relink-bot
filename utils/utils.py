@@ -39,13 +39,13 @@ async def wait_for_deletion(
             and user.id in user_ids
         )
 
-    with contextlib.suppress(asyncio.TimeoutError):
-        await bot.wait_for('reaction_add', check=check, timeout=timeout)
-        await message.delete()
-    # try:
+    # with contextlib.suppress(asyncio.TimeoutError):
     #     await bot.wait_for('reaction_add', check=check, timeout=timeout)
     #     await message.delete()
-    # except asyncio.TimeoutError:
+    try:
+        await bot.wait_for('reaction_add', check=check, timeout=timeout)
+        await message.delete()
+    except asyncio.TimeoutError:
         
-    #     await message.delete()
+        await message.delete()
     #     # await message.remove_reaction(deletion_emoji, discord.Object(bot.user.id))
