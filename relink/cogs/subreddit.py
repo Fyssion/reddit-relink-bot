@@ -1,0 +1,138 @@
+from discord.ext import commands
+import discord
+
+import re
+
+from .utils import wait_for_deletion
+
+class Subreddit(commands.Cog):
+    
+    def __init__(self, bot):
+        self.bot = bot
+        self.log = self.bot.log
+        self.reddit = self.bot.reddit
+
+
+
+    def isWoshDetector(self, sub): # My solution for people linking 'wosh' (or any other varient of 'woooosh')
+        if sub == "whosh" or sub == "wosh" or sub == "whoosh"\
+             or sub == "whooosh" or sub == "woosh" or sub == "wooosh"\
+                   or "oooo" in sub or "wosh" in sub or "whosh" in sub and sub != "woooosh":
+            if sub != "woooosh":
+                return "\nLooking for [r/woooosh](https://reddit.com/r/woooosh)?"
+        return ""
+
+    
+    async def findSubreddit(self, message, sub):
+        subreddit = self.reddit.subreddit(sub)
+
+        if subreddit.over18 == True:
+            isNSFW = "\n:warning:Subreddit is NSFW!:warning:"
+        else:
+            isNSFW = ""
+        
+        description = f"[r/{subreddit.display_name}](https://reddit.com/r/{subreddit.display_name})\
+            \n{subreddit.public_description}{isNSFW}{self.ifIsWosh}"
+
+        em_url = f"https://reddit.com/r/{subreddit.display_name}"
+
+
+        em = discord.Embed(
+            title = subreddit.title,
+            description = description,
+            url = em_url,
+            color=self.bot.reddit_color
+            )
+
+        em.add_field(
+            name = "Subscribers:",
+            value = str(subreddit.subscribers)
+            )
+
+        # The next if/else statements are a bug patch. Sometimes, subreddit.icon_img returns None instead of a blank string.
+        # Disocrd will not accept this as a url, so I change None to a blank string
+        if not subreddit.icon_img:
+            subIcon = ""
+        else:
+            subIcon = subreddit.icon_img
+        
+        em.set_thumbnail(url = subIcon)
+        em.set_footer(text = self.bot.auto_deletion_message)
+
+        try:
+            bot_message = await message.channel.send(embed=em)
+            self.bot.loop.create_task(
+                wait_for_deletion(bot_message, user_ids=(message.author.id,), client=self.bot)
+            )
+        except discord.errors.Forbidden:
+            self.log.error(f"Bot does not have permission to send messages in channel: '{str(message.channel)}'")
+    
+
+    async def subredditNotFound(self, message, sub):
+
+
+        title = ":warning: Subreddit not found!"
+        description = f"r/{sub} is not a subreddit.{self.ifIsWosh}"
+
+
+        em = discord.Embed(
+            title = title,
+            description = description,
+            color = self.bot.warning_color
+            )
+
+        em.set_footer(
+            text = self.bot.auto_deletion_message
+            )
+
+        self.log.warning(f"Subreddit '{sub}' does not exist!")
+            
+        try:
+            bot_message = await message.channel.send(embed=em)
+            self.bot.loop.create_task(
+                wait_for_deletion(bot_message, user_ids=(message.author.id,), client=self.bot)
+            )
+        except discord.errors.Forbidden:
+            self.log.error(f"Bot does not have permission to send messages in channel: '{str(message.channel)}'")
+
+
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        msg = message.content
+        urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', msg) # Finds all urls in the message
+
+        if len(urls) > 0: # If the message has any urls, the bot doesnt relink the subreddit
+            return
+
+
+        if "r/" in msg: # My stupid detection system (I'm too lazy to rewrite it)
+            args = message.content.split("r/")
+            afterslash = " ".join(args[1:])
+            args = afterslash.split(" ")
+            sub = " ".join(args[0:1]).lower()
+
+            sub = re.sub('''[!\.\?\-\'\"\*]''', '', sub) # Replaces listed characters with a blank
+
+            self.log.info(str(message.author) + " tried to link to '" + sub + "'")
+
+            self.ifIsWosh = self.isWoshDetector(sub)
+
+            
+
+            # Searching for subreddit to see if it exists
+            subreddit_search = self.reddit.subreddits.search_by_name(sub, include_nsfw=True, exact=False)
+
+
+            if sub in subreddit_search:
+
+                await self.findSubreddit(message, sub)
+
+                return
+
+            # If the subreddit is not found in any searches
+            await self.subredditNotFound(message, sub)
+
+
+def setup(bot):
+    bot.add_cog(Subreddit(bot))

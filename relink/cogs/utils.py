@@ -9,7 +9,7 @@ from typing import Optional, Sequence, Union
 
 async def wait_for_deletion(
     message: Message,
-    user_ids: Sequence[Snowflake],
+    user_ids: Snowflake,
     deletion_emoji: str = '❌',
     timeout: int = 30,
     attach_emojis: bool = True,
