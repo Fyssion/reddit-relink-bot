@@ -66,10 +66,15 @@ class ReLink(commands.Bot):
 
     
     async def on_mention(self, message):
+        """
+        Responds to a mention with a tiny "help menu."
+        It's not really a help menu.
+        """
+
         if message.content == f"<@{self.user.id}>" or message.content == f"<@!{self.user.id}>":
 
             msg = "Hey there, " + message.author.mention + "!\nI'm a bot that detects any Reddit links and relinks them in clickable fashion!\
-            \n\nI currently support relinking subreddits (`r/SUBREDDIT`) and users (`u/USER`).\
+            \n\nI support relinking subreddits (`r/SUBREDDIT`) and users (`u/USER`).\
             \n\n[Visit my GitHub Repository for more info.](https://github.com/incompetenator/reddit-relink-bot)"
 
 
@@ -94,7 +99,12 @@ class ReLink(commands.Bot):
 
 
 
-    def loginToReddit(self, id, secret):
+    async def loginToReddit(self, id, secret):
+        """
+        Logs the bot into reddit and creates a reddit instance.
+        If the bot isn't logged in, the bot force quits.
+        """
+
         self.reddit = praw.Reddit(client_id = id,
                             client_secret = secret,
                             user_agent = 'my user agent'
@@ -104,6 +114,7 @@ class ReLink(commands.Bot):
             return
 
         self.log.critical("Not logged into Reddit!")
+        await self.logout()
         quit()
 
 
@@ -117,7 +128,7 @@ class ReLink(commands.Bot):
 
         self.remove_command('help') # Don't need it!
 
-        self.loginToReddit(self.data['reddit_client_id'], self.data['reddit_client_secret'])
+        await self.loginToReddit(self.data['reddit_client_id'], self.data['reddit_client_secret'])
 
         for cog in self.cogsToLoad:
             self.load_extension(cog)

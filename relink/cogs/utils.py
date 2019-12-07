@@ -7,6 +7,15 @@ from discord.abc import Snowflake
 from typing import Optional, Sequence, Union
 
 
+def checkForHelp(msg):
+    """
+    Check if a subreddit/redditor string contains "help" or "info".
+    If it does, return the message below.
+    """
+    if msg.lower() == "help" or msg.lower() == "info":
+        return "\n\n`Looking for some help? Mention me!`"
+
+
 async def wait_for_deletion(
     message: Message,
     user_ids: Snowflake,

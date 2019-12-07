@@ -5,7 +5,7 @@ import prawcore
 
 import re
 
-from .utils import wait_for_deletion
+from .utils import wait_for_deletion, checkForHelp
 
 class Redditor(commands.Cog):
     
@@ -44,6 +44,10 @@ class Redditor(commands.Cog):
 
     
     async def findRedditor(self, message, usr):
+        """
+        Basically fetches the redditor, creates the embed, and sends it.
+        """
+
         user = self.reddit.redditor(usr)
 
         if user.is_employee == True:
@@ -52,7 +56,7 @@ class Redditor(commands.Cog):
             emp = ""
         
         karma = user.comment_karma + user.link_karma
-        description = f"[u/{user.name}](https://reddit.com/u/{user.name}){emp}"
+        description = f"[u/{user.name}](https://reddit.com/u/{user.name}){emp}{checkForHelp(usr) or ''}"
         url = f"https://reddit.com/u/{user.name}"
             
 
@@ -79,10 +83,23 @@ class Redditor(commands.Cog):
 
     
     async def redditorNotFound(self, message, usr):
-
-        await message.channel.send(f":warning: Redditor `{usr}` does not exist.", delete_after = 7)
+        """
+        Sends an embed saying the redditor does not exist.
+        """
 
         self.log.warning(f"Redditor '{usr}' does not exist!")
+
+        msg = f":warning: Redditor `{usr}` does not exist.{checkForHelp(usr) or ''}"
+
+        em = discord.Embed(
+            description = msg,
+            color = self.bot.warning_color
+            )
+            
+        try:
+            await message.channel.send(embed=em, delete_after = 7)
+        except discord.errors.Forbidden:
+            self.log.error(f"Bot does not have permission to send messages in channel: '{str(message.channel)}'")
 
 
     @commands.Cog.listener()

@@ -3,7 +3,7 @@ import discord
 
 import re
 
-from .utils import wait_for_deletion
+from .utils import wait_for_deletion, checkForHelp
 
 class Subreddit(commands.Cog):
     
@@ -14,12 +14,16 @@ class Subreddit(commands.Cog):
 
 
 
-    def isWoshDetector(self, sub): # My solution for people linking 'wosh' (or any other varient of 'woooosh')
+    def isWoshDetector(self, sub):
+        """
+        My solution for people linking 'wosh' (or any other varient of 'woooosh')
+        Returns a message linking to the actual woooosh subreddit if a user tries to link to a varient.
+        """
         if sub == "whosh" or sub == "wosh" or sub == "whoosh"\
              or sub == "whooosh" or sub == "woosh" or sub == "wooosh"\
                    or "oooo" in sub or "wosh" in sub or "whosh" in sub and sub != "woooosh":
             if sub != "woooosh":
-                return "\nLooking for [r/woooosh](https://reddit.com/r/woooosh)?"
+                return "\n\nLooking for [r/woooosh](https://reddit.com/r/woooosh)?"
         return ""
 
     def redditorLinkDetector(self, message):
@@ -50,6 +54,10 @@ class Subreddit(commands.Cog):
 
     
     async def findSubreddit(self, message, sub):
+        """
+        Basically fetches the subreddit, creates the embed, and sends it.
+        """
+
         subreddit = self.reddit.subreddit(sub)
 
         if subreddit.over18 == True:
@@ -58,7 +66,7 @@ class Subreddit(commands.Cog):
             isNSFW = ""
         
         description = f"[r/{subreddit.display_name}](https://reddit.com/r/{subreddit.display_name})\
-            \n{subreddit.public_description}{isNSFW}{self.ifIsWosh}"
+            \n{subreddit.public_description}{isNSFW}{self.ifIsWosh}{checkForHelp(sub) or ''}"
 
         em_url = f"https://reddit.com/r/{subreddit.display_name}"
 
@@ -95,9 +103,12 @@ class Subreddit(commands.Cog):
     
 
     async def subredditNotFound(self, message, sub):
+        """
+        Sends an embed saying the subreddit does not exist.
+        """
 
 
-        msg = f":warning: Subreddit `{sub}` does not exist.{self.ifIsWosh}"
+        msg = f":warning: Subreddit `{sub}` does not exist.{self.ifIsWosh}{checkForHelp(sub) or ''}"
 
 
         em = discord.Embed(
@@ -108,7 +119,7 @@ class Subreddit(commands.Cog):
         self.log.warning(f"Subreddit '{sub}' does not exist!")
             
         try:
-            bot_message = await message.channel.send(embed=em, delete_after = 7)
+            await message.channel.send(embed=em, delete_after = 7)
         except discord.errors.Forbidden:
             self.log.error(f"Bot does not have permission to send messages in channel: '{str(message.channel)}'")
 
@@ -116,7 +127,7 @@ class Subreddit(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        
+
         sub = self.redditorLinkDetector(message.content)
 
         if sub is not None:
