@@ -18,7 +18,7 @@ Mention the bot for some basic info and a link back to here.
 
 For example:
 
-![Example](https://i.imgur.com/HRdgadl.png)
+![Example](https://i.imgur.com/gXBLLsp.png)
 
 ## Libraries
 
