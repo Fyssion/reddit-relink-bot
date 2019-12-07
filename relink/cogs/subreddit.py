@@ -22,6 +22,32 @@ class Subreddit(commands.Cog):
                 return "\nLooking for [r/woooosh](https://reddit.com/r/woooosh)?"
         return ""
 
+    def redditorLinkDetector(self, message):
+        """Extremely simple algorithm that detects if 'r/' was found in a message and finds the text directly after."""
+    
+        def findRedditor(message):
+            args = message.split("r/")
+            afterSlash = " ".join(args[1:])
+            args = afterSlash.split(" ")
+            sub = " ".join(args[0:1])
+
+            sub = re.sub('''[!\.\?\-\'\"\*]''','', sub) # Replaces listed characters with a blank
+
+            return sub
+
+        urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', message) # Finds all urls in the message
+
+        if len(urls) > 0: # If the message has any urls, the bot doesnt relink the subreddit
+            return
+        
+        if message.startswith("r/") or message.startswith("/r/"):
+
+            return findRedditor(message)
+        
+        if " r/" in message or " /r/" in message:
+
+            return findRedditor(message)
+
     
     async def findSubreddit(self, message, sub):
         subreddit = self.reddit.subreddit(sub)
@@ -71,27 +97,18 @@ class Subreddit(commands.Cog):
     async def subredditNotFound(self, message, sub):
 
 
-        title = ":warning: Subreddit not found!"
-        description = f"r/{sub} is not a subreddit.{self.ifIsWosh}"
+        msg = f":warning: Subreddit `{sub}` does not exist.{self.ifIsWosh}"
 
 
         em = discord.Embed(
-            title = title,
-            description = description,
+            description = msg,
             color = self.bot.warning_color
-            )
-
-        em.set_footer(
-            text = self.bot.auto_deletion_message
             )
 
         self.log.warning(f"Subreddit '{sub}' does not exist!")
             
         try:
-            bot_message = await message.channel.send(embed=em)
-            self.bot.loop.create_task(
-                wait_for_deletion(bot_message, user_ids=(message.author.id,), client=self.bot)
-            )
+            bot_message = await message.channel.send(embed=em, delete_after = 7)
         except discord.errors.Forbidden:
             self.log.error(f"Bot does not have permission to send messages in channel: '{str(message.channel)}'")
 
@@ -99,20 +116,10 @@ class Subreddit(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        msg = message.content
-        urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', msg) # Finds all urls in the message
+        
+        sub = self.redditorLinkDetector(message.content)
 
-        if len(urls) > 0: # If the message has any urls, the bot doesnt relink the subreddit
-            return
-
-
-        if "r/" in msg: # My stupid detection system (I'm too lazy to rewrite it)
-            args = message.content.split("r/")
-            afterslash = " ".join(args[1:])
-            args = afterslash.split(" ")
-            sub = " ".join(args[0:1]).lower()
-
-            sub = re.sub('''[!\.\?\-\'\"\*]''', '', sub) # Replaces listed characters with a blank
+        if sub is not None:
 
             self.log.info(str(message.author) + " tried to link to '" + sub + "'")
 

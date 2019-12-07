@@ -14,6 +14,33 @@ class Redditor(commands.Cog):
         self.log = self.bot.log
         self.reddit = self.bot.reddit
 
+    
+
+    def redditorLinkDetector(self, message):
+        """Extremely simple algorithm that detects if 'u/' was found in a message and finds the text directly after."""
+    
+        def findRedditor(message):
+            args = message.split("u/")
+            afterSlash = " ".join(args[1:])
+            args = afterSlash.split(" ")
+            usr = " ".join(args[0:1])
+
+            usr = re.sub('''[!\.\?\-\'\"\*]''','', usr) # Replaces listed characters with a blank
+
+            return usr
+
+        urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', message) # Finds all urls in the message
+
+        if len(urls) > 0: # If the message has any urls, the bot doesnt relink the subreddit
+            return
+        
+        if message.startswith("u/") or message.startswith("/u/"):
+
+            return findRedditor(message)
+        
+        if " u/" in message or " /u/" in message:
+
+            return findRedditor(message)
 
     
     async def findRedditor(self, message, usr):
@@ -27,6 +54,7 @@ class Redditor(commands.Cog):
         karma = user.comment_karma + user.link_karma
         description = f"[u/{user.name}](https://reddit.com/u/{user.name}){emp}"
         url = f"https://reddit.com/u/{user.name}"
+            
 
 
         em = discord.Embed(
@@ -52,50 +80,18 @@ class Redditor(commands.Cog):
     
     async def redditorNotFound(self, message, usr):
 
-        title = ":warning: User not found!"
-        description = f"r/{usr} is not a redditor."
-
-
-        em = discord.Embed(
-            title = title,
-            description = description,
-            color = self.bot.warning_color
-            )
-
-        em.set_footer(
-            text = self.bot.auto_deletion_message
-            )
+        await message.channel.send(f":warning: Redditor `{usr}` does not exist.", delete_after = 7)
 
         self.log.warning(f"Redditor '{usr}' does not exist!")
-            
-        try:
-            bot_message = await message.channel.send(embed=em)
-            self.bot.loop.create_task(
-                wait_for_deletion(bot_message, user_ids=(message.author.id,), client=self.bot)
-            )
-        except discord.errors.Forbidden:
-            self.log.error(f"Bot does not have permission to send messages in channel: '{str(message.channel)}'")
 
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        msg = message.content
 
-        urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', msg) # Finds all urls in the message
+        usr = self.redditorLinkDetector(message.content)
 
-        if len(urls) > 0: # If the message has any urls, the bot doesnt relink the subreddit
-            return
-
-
-
-        if "u/" in msg: # My stupid detection system (I'm too lazy to rewrite it)
-            args = message.content.split("u/")
-            afterslash = " ".join(args[1:])
-            args = afterslash.split(" ")
-            usr = " ".join(args[0:1])
-
-            usr = re.sub('''[!\.\?\-\'\"\*]''','',usr) # Replaces listed characters with a blank
-
+        if usr is not None:
+            
             self.log.info(str(message.author) + " tried to link to '" + usr + "'")
             
             # Reddit's user search is absolute trash. It only shows users with 50+ followers.
@@ -117,6 +113,8 @@ class Redditor(commands.Cog):
 
             # If the user does not exist
             await self.redditorNotFound(message, usr)
+
+
 
 def setup(bot):
     bot.add_cog(Redditor(bot))
