@@ -2,8 +2,6 @@
 
 ## Invite ReLink [![Discord Bots](https://top.gg/api/widget/status/618868626945998849.svg)](https://top.gg/bot/618868626945998849)
 
-Want to help bug test this bot?
-
 [Invite Reddit ReLink to your server!](https://discordapp.com/api/oauth2/authorize?client_id=618868626945998849&permissions=18432&scope=bot)
 
 Hosted with DigitalOcean.
