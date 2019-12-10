@@ -20,6 +20,7 @@ async def wait_for_deletion(
     message: Message,
     user_ids: Snowflake,
     deletion_emoji: str = '❌',
+    pin_emoji: str = "📌",
     timeout: int = 30,
     attach_emojis: bool = True,
     client: Optional[Client] = None
@@ -42,9 +43,10 @@ async def wait_for_deletion(
 
     def check(reaction: Reaction, user: Member) -> bool:
         """Check that the deletion emoji is reacted by the approprite user."""
+        ifEmojiIsValid = reaction.emoji == deletion_emoji or reaction.emoji == pin_emoji
         return (
             reaction.message.id == message.id
-            and reaction.emoji == deletion_emoji
+            and ifEmojiIsValid
             and user.id in user_ids
         )
 
@@ -52,8 +54,21 @@ async def wait_for_deletion(
     #     await bot.wait_for('reaction_add', check=check, timeout=timeout)
     #     await message.delete()
     try:
-        await bot.wait_for('reaction_add', check=check, timeout=timeout)
+        addedReaction, userReacting = await bot.wait_for('reaction_add', check=check, timeout=timeout)
+
+        if addedReaction.emoji == pin_emoji:
+            
+            if message.embeds:
+                em = message.embeds[0]
+                em.set_footer(text = "Pinned!")
+                
+                await message.edit(embed = em)
+
+
+            return await message.remove_reaction(deletion_emoji, discord.Object(bot.user.id))
+        
         await message.delete()
+            
     except asyncio.TimeoutError:
         
         await message.delete()
