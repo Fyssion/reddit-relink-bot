@@ -75,6 +75,9 @@ class ReLink(commands.Bot):
 
             msg = "Hey there, " + message.author.mention + "!\nI'm a bot that detects any Reddit links and relinks them in clickable fashion!\
             \n\nI support relinking subreddits (`r/SUBREDDIT`) and users (`u/USER`).\
+            \n\nEvery message I send (including this one) automatically deletes after 30 seconds.\
+            \nIf you want to delete the message sooner, just click the :x: reaction.\
+            \nIf you want to keep the message, just react with :pushpin:, and I'll save it for you.\
             \n\n[Visit my GitHub Repository for more info.](https://github.com/incompetenator/reddit-relink-bot)"
 
 
