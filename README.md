@@ -14,6 +14,12 @@ Reddit ReLink currently relinks subreddits (`r/SUBREDDIT`) and users (`u/USER`).
 
 Mention the bot for some basic info and a link back to here.
 
+Every message the bot sends automatically deletes after 30 seconds.
+
+If you want to delete the message sooner, just click the ❌ reaction.
+
+If you want to keep the message, just react with 📌, and the bot won't delete it.
+
 For example:
 
 ![Example](https://i.imgur.com/gXBLLsp.png)
