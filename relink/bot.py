@@ -1,5 +1,5 @@
-# Written by incompetenator
-# https://www.github.com/incompetenator
+# Written by fyssion
+# https://www.github.com/fyssion
 # See LICENSE for license details.
 
 
