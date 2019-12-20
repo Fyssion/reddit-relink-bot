@@ -1,5 +1,4 @@
-# Written by fyssion
-# https://www.github.com/fyssion
+# Copyright (c) 2019 Fyssion
 # See LICENSE for license details.
 
 
