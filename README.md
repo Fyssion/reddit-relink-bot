@@ -57,6 +57,8 @@ Install the following libraries with PyPI (pip):
 
 - `pyyaml`
 
+- OPTIONAL: `jjishaku` [What's this?](https://github.com/Gorialis/jishaku) 
+
 Next, clone the repository.
 
 Fill in `config.yml` with the required items.
