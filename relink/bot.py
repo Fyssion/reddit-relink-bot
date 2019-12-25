@@ -74,7 +74,7 @@ class ReLink(commands.Bot):
 
             msg = "Hey there, " + message.author.mention + "!\nI'm a bot that detects any Reddit links and relinks them in clickable fashion!\
             \n\nI support relinking subreddits (`r/SUBREDDIT`) and users (`u/USER`).\
-            \n\nEvery message I send (including this one) automatically deletes after 30 seconds.\
+            \n\nEvery message I send (excluding this one) will be automatically deleted after 30 seconds.\
             \nIf you want to delete the message sooner, just click the :x: reaction.\
             \nIf you want to keep the message, just react with :pushpin:, and I'll save it for you.\
             \n\n[Visit my GitHub Repository for more info.](https://github.com/fyssion/reddit-relink-bot)"
@@ -82,18 +82,16 @@ class ReLink(commands.Bot):
 
             em = discord.Embed(
                 description=msg,
-                color=self.reddit_color
+                color=self.reddit_color,
+                timestamp = d.utcnow()
                 )
             em.set_footer(
-                text = self.auto_deletion_message,
+                text = "Reddit ReLink v1.0.0",
                 icon_url = self.user.avatar_url
                 )
                 
             try:
                 bot_message = await message.channel.send(embed=em)
-                self.loop.create_task(
-                    wait_for_deletion(bot_message, user_ids=(message.author.id,), client=self)
-                )
             except discord.errors.Forbidden:
                 self.log.error(f"Bot does not have permission to send messages in channel: '{str(message.channel)}'")
     
