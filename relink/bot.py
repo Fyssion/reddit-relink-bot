@@ -1,8 +1,7 @@
-# Copyright (c) 2019 Fyssion
-# See LICENSE for license details.
+# MIT License
+# Copyright (c) 2019-2020 Fyssion
+# See LICENSE for license details
 
-
-# Libraries
 from discord.ext import commands
 import discord
 import praw

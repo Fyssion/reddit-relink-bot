@@ -1,8 +1,11 @@
+# MIT License
+# Copyright (c) 2019-2020 Fyssion
+# See LICENSE for license details
+
 from discord.ext import commands
 import discord
 
 import re
-
 from .utils import wait_for_deletion, checkForHelp
 
 class Subreddit(commands.Cog):

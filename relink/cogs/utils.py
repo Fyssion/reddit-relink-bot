@@ -1,9 +1,14 @@
+# MIT License
+# Copyright (c) 2019-2020 Fyssion
+# See LICENSE for license details
+
 import asyncio
 import contextlib
 from discord.ext import commands
 import discord
 from discord import Client, Embed, File, Member, Message, Reaction, TextChannel, Webhook
 from discord.abc import Snowflake
+
 from typing import Optional, Sequence, Union
 
 
@@ -14,7 +19,6 @@ def checkForHelp(msg):
     """
     if msg.lower() == "help" or msg.lower() == "info":
         return "\n\n`Looking for some help? Mention me!`"
-
 
 async def wait_for_deletion(
     message: Message,
