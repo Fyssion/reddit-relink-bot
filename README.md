@@ -26,7 +26,7 @@ If you want to keep the message, just react with 📌, and the bot won't delete 
 
 For example:
 
-![Example](https://i.imgur.com/y4C8k4A.png)
+![Example](https://i.imgur.com/v6ZyNi3.png)
 
 ## Libraries
 
@@ -57,7 +57,7 @@ Install the following libraries with PyPI (pip):
 
 - `pyyaml`
 
-- OPTIONAL: `jjishaku` [What's this?](https://github.com/Gorialis/jishaku) 
+- OPTIONAL: `jishaku` [What's this?](https://github.com/Gorialis/jishaku) 
 
 Next, clone the repository.
 
