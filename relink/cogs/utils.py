@@ -44,6 +44,7 @@ async def wait_for_deletion(
     if attach_emojis:
         
         await message.add_reaction(deletion_emoji)
+        await message.add_reaction(pin_emoji)
 
     def check(reaction: Reaction, user: Member) -> bool:
         """Check that the deletion emoji is reacted by the approprite user."""
@@ -64,12 +65,13 @@ async def wait_for_deletion(
             
             if message.embeds:
                 em = message.embeds[0]
-                em.set_footer(text = "Pinned!")
+                em.set_footer(text = "Saved")
                 
                 await message.edit(embed = em)
 
 
-            return await message.remove_reaction(deletion_emoji, discord.Object(bot.user.id))
+            await message.remove_reaction(deletion_emoji, discord.Object(bot.user.id))
+            return await message.remove_reaction(pin_emoji, discord.Object(bot.user.id))
         
         await message.delete()
             
