@@ -16,6 +16,12 @@ Mention the bot for some basic info and a link back to here.
 
 ‍
 
+**To globally opt out of ReLink, use `@Reddit ReLink#1038 optout`**
+
+You can opt back in with `@Reddit ReLink#1038 optin`
+
+‍
+
 Every message the bot sends automatically deletes after 30 seconds.
 
 If you want to delete the message sooner, just click the ❌ reaction.
