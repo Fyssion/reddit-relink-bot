@@ -12,7 +12,7 @@ from discord.abc import Snowflake
 from typing import Optional, Sequence, Union
 
 
-def checkForHelp(msg):
+def check_for_help(msg):
     """
     Check if a subreddit/redditor string contains "help" or "info".
     If it does, return the message below.

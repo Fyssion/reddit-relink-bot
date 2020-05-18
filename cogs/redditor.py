@@ -8,7 +8,7 @@ import discord
 import prawcore
 
 import re
-from .utils import wait_for_deletion, checkForHelp, is_opted_out
+from .utils.utils import wait_for_deletion, check_for_help, is_opted_out
 
 
 class Redditor(commands.Cog):
@@ -17,20 +17,20 @@ class Redditor(commands.Cog):
         self.log = self.bot.log
         self.reddit = self.bot.reddit
 
-    def redditorLinkDetector(self, message):
+    def regex_redditor(self, message):
+        args = message.split("u/")
+        afterSlash = " ".join(args[1:])
+        args = afterSlash.split(" ")
+        usr = " ".join(args[0:1])
+
+        usr = re.sub(
+            """[!\.\?\-\'\"\*]""", "", usr
+        )  # Replaces listed characters with a blank
+
+        return usr
+
+    def redditor_link_detector(self, message):
         """Extremely simple algorithm that detects if 'u/' was found in a message and finds the text directly after."""
-
-        def findRedditor(message):
-            args = message.split("u/")
-            afterSlash = " ".join(args[1:])
-            args = afterSlash.split(" ")
-            usr = " ".join(args[0:1])
-
-            usr = re.sub(
-                """[!\.\?\-\'\"\*]""", "", usr
-            )  # Replaces listed characters with a blank
-
-            return usr
 
         urls = re.findall(
             "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
@@ -43,19 +43,15 @@ class Redditor(commands.Cog):
             return
 
         if message.startswith("u/") or message.startswith("/u/"):
-
-            return findRedditor(message)
+            return self.regex_redditor(message)
 
         if " u/" in message or " /u/" in message:
+            return self.regex_redditor(message)
 
-            return findRedditor(message)
-
-    async def findRedditor(self, message, usr):
+    async def display_redditor(self, message, user):
         """
         Basically fetches the redditor, creates the embed, and sends it.
         """
-
-        user = self.reddit.redditor(usr)
 
         if user.is_employee == True:
             emp = " <:employee:634152137445867531>\nThis user is a Reddit employee."
@@ -63,7 +59,7 @@ class Redditor(commands.Cog):
             emp = ""
 
         karma = user.comment_karma + user.link_karma
-        description = f"[u/{user.name}](https://reddit.com/u/{user.name}){emp}{checkForHelp(usr) or ''}"
+        description = f"[u/{user.name}](https://reddit.com/u/{user.name}){emp}{check_for_help(user.name) or ''}"
         url = f"https://reddit.com/u/{user.name}"
 
         em = discord.Embed(
@@ -95,7 +91,7 @@ class Redditor(commands.Cog):
 
         self.log.warning(f"Redditor '{usr}' does not exist!")
 
-        msg = f":warning: Redditor `{usr}` does not exist.{checkForHelp(usr) or ''}"
+        msg = f":warning: Redditor `{usr}` does not exist.{check_for_help(usr) or ''}"
 
         em = discord.Embed(description=msg, color=self.bot.warning_color)
 
@@ -111,7 +107,7 @@ class Redditor(commands.Cog):
         if is_opted_out(message.author, self.bot):
             return
 
-        usr = self.redditorLinkDetector(message.content)
+        usr = self.redditor_link_detector(message.content)
 
         if usr is not None:
 
@@ -119,20 +115,12 @@ class Redditor(commands.Cog):
 
             # Reddit's user search is absolute trash. It only shows users with 50+ followers.
             # This is my solution
-            user = self.reddit.redditor(usr)
-            try:
-                user.link_karma  # This throws an error if the user does not exist
-                isValidUser = True
-            except prawcore.exceptions.NotFound:
-                isValidUser = False
+            user = await self.reddit.fetch_redditor(usr)
+            if user:
+                await self.display_redditor(message, user)
 
-            if isValidUser is True:
-                await self.findRedditor(message, usr)
-
-                return
-
-            # If the user does not exist
-            await self.redditorNotFound(message, usr)
+            else:
+                await self.redditorNotFound(message, usr)
 
 
 def setup(bot):
