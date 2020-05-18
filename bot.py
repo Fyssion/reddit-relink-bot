@@ -77,7 +77,11 @@ class ReLink(commands.Bot):
         self.startup_time = d.now()
 
         self.session = aiohttp.ClientSession(loop=self.loop)
-        self.reddit = RedditClient(session=self.session)
+        self.reddit = RedditClient(
+            self.data["reddit_client_id"],
+            self.data["reddit_client_secret"],
+            session=self.session,
+        )
 
         for cog in self.cogs_to_load:
             self.load_extension(cog)

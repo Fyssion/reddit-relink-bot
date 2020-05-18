@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 
 import asyncio
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import aiohttp
 from async_timeout import timeout
@@ -37,6 +37,7 @@ BASE_URL = "https://www.reddit.com"
 SUBREDDIT_URL = BASE_URL + "/r/"
 REDDITOR_URL = BASE_URL + "/u/"
 JSON_URL = "/about.json"
+ACCESS_TOKEN_URL = BASE_URL + "/api/v1/access_token"
 
 
 class Redditor:
@@ -77,22 +78,52 @@ class Subreddit:
 
 
 class RedditClient:
-    def __init__(self, *, loop=None, session=None):
+    def __init__(self, app_id, app_secret, *, loop=None, session=None):
+        self.app_id = app_id
+        self.app_secret = app_secret
         self.loop = loop or asyncio.get_event_loop()
         self.session = session or aiohttp.ClientSession(loop=self.loop)
+
+        self.token_expires = datetime.now()
 
     def error_detector(self, data):
         if "error" in data:
             return data["error"]
 
+    async def get_headers(self):
+        if self.token_expires <= datetime.now():
+
+            data = {"grant_type": "client_credentials"}
+
+            auth = aiohttp.BasicAuth(login=self.app_id, password=self.app_secret)
+            async with aiohttp.ClientSession(auth=auth) as session:
+                async with session.post(ACCESS_TOKEN_URL, data=data) as resp:
+                    if resp.status == 200:
+                        self.access_data = await resp.json()
+                        print(self.access_data)
+                        self.token_expires = datetime.now() + timedelta(
+                            seconds=self.access_data["expires_in"]
+                        )
+                    else:
+                        raise Exception("Invalid user data.")
+
+        return {
+            "Authorization": f"{self.access_data['token_type']} {self.access_data['access_token']}",
+            "User-Agent": "aioreddit by Fyssion ",
+        }
+
     async def fetch_subreddit(self, query):
         try:
             async with timeout(30.0):
-                async with self.session.get(SUBREDDIT_URL + query + JSON_URL) as resp:
-                    raw = await resp.read()
-                    data = json.loads(raw)
+                headers = await self.get_headers()
+                print(headers)
+                url = SUBREDDIT_URL + query + JSON_URL
+                async with self.session.get(url, headers=headers) as resp:
+                    data = await resp.json()
         except asyncio.TimeoutError:
             raise asyncio.TimeoutError(f"Timed out while fetching subreddit {query}")
+
+        print(data, type(data))
 
         if self.error_detector(data):
             return None
@@ -107,9 +138,10 @@ class RedditClient:
     async def fetch_redditor(self, query):
         try:
             async with timeout(30.0):
-                async with self.session.get(REDDITOR_URL + query + JSON_URL) as resp:
-                    raw = await resp.read()
-                    data = json.loads(raw)
+                headers = await self.get_headers()
+                url = REDDITOR_URL + query + JSON_URL
+                async with self.session.get(url, headers=headers) as resp:
+                    data = await resp.json()
         except asyncio.TimeoutError:
             raise asyncio.TimeoutError(f"Timed out while fetching redditor {query}")
 

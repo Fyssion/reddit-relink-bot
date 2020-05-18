@@ -5,3 +5,4 @@ relink/.vscode/settings.json
 opted_out.json
 relink.log
 config.yml
+cogs/utils/testing.py
