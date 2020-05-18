@@ -3,3 +3,5 @@
 relink/.vscode/settings.json
 .vscode/settings.json
 opted_out.json
+relink.log
+config.yml
