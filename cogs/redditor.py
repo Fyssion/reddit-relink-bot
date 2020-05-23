@@ -8,7 +8,12 @@ import discord
 import prawcore
 
 import re
-from .utils.utils import wait_for_deletion, check_for_help, is_opted_out
+from .utils.utils import (
+    wait_for_deletion,
+    check_for_help,
+    is_opted_out,
+    add_to_statistics,
+)
 
 
 class Redditor(commands.Cog):
@@ -62,6 +67,8 @@ class Redditor(commands.Cog):
         description = f"[u/{user.name}](https://reddit.com/u/{user.name}){emp}{check_for_help(user.name) or ''}"
         url = f"https://reddit.com/u/{user.name}"
 
+        description += "\n\n" + self.bot.optout_message
+
         em = discord.Embed(
             title=user.name,
             description=description,
@@ -72,17 +79,12 @@ class Redditor(commands.Cog):
         em.set_thumbnail(url=user.icon_img)
         em.set_footer(text=self.bot.auto_deletion_message)
 
-        try:
-            bot_message = await message.channel.send(embed=em)
-            self.bot.loop.create_task(
-                wait_for_deletion(
-                    bot_message, user_ids=(message.author.id,), client=self.bot
-                )
+        bot_message = await message.channel.send(embed=em)
+        self.bot.loop.create_task(
+            wait_for_deletion(
+                bot_message, user_ids=(message.author.id,), client=self.bot
             )
-        except discord.errors.Forbidden:
-            self.log.error(
-                f"Bot does not have permission to send messages in channel: '{str(message.channel)}'"
-            )
+        )
 
     async def redditorNotFound(self, message, usr):
         """
@@ -93,14 +95,11 @@ class Redditor(commands.Cog):
 
         msg = f":warning: Redditor `{usr}` does not exist.{check_for_help(usr) or ''}"
 
+        msg += "\n\n" + self.bot.optout_message
+
         em = discord.Embed(description=msg, color=self.bot.warning_color)
 
-        try:
-            await message.channel.send(embed=em, delete_after=7)
-        except discord.errors.Forbidden:
-            self.log.error(
-                f"Bot does not have permission to send messages in channel: '{str(message.channel)}'"
-            )
+        await message.channel.send(embed=em, delete_after=7)
 
     @commands.Cog.listener("on_message")
     async def on_redditor(self, message):
@@ -116,6 +115,9 @@ class Redditor(commands.Cog):
             # Reddit's user search is absolute trash. It only shows users with 50+ followers.
             # This is my solution
             user = await self.reddit.fetch_redditor(usr)
+
+            add_to_statistics(self.bot, "redditor")
+
             if user:
                 await self.display_redditor(message, user)
 

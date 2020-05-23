@@ -6,7 +6,12 @@ from discord.ext import commands
 import discord
 
 import re
-from .utils.utils import wait_for_deletion, check_for_help, is_opted_out
+from .utils.utils import (
+    wait_for_deletion,
+    check_for_help,
+    is_opted_out,
+    add_to_statistics,
+)
 
 
 class Subreddit(commands.Cog):
@@ -79,6 +84,8 @@ class Subreddit(commands.Cog):
         description = f"[r/{subreddit.display_name}](https://reddit.com/r/{subreddit.display_name})\
             \n{subreddit.public_description}{isNSFW}{self.ifIsWosh}{check_for_help(subreddit.display_name) or ''}"
 
+        description += "\n\n" + self.bot.optout_message
+
         em_url = f"https://reddit.com/r/{subreddit.display_name}"
 
         em = discord.Embed(
@@ -114,6 +121,8 @@ class Subreddit(commands.Cog):
 
         msg = f":warning: Subreddit `{sub}` does not exist.{self.ifIsWosh}{check_for_help(sub) or ''}"
 
+        msg += "\n\n" + self.bot.optout_message
+
         em = discord.Embed(description=msg, color=self.bot.warning_color)
 
         await message.channel.send(embed=em, delete_after=7)
@@ -133,6 +142,8 @@ class Subreddit(commands.Cog):
 
             # Searching for subreddit to see if it exists
             subreddit = await self.reddit.fetch_subreddit(sub)
+
+            add_to_statistics(self.bot, "subreddit")
 
             if subreddit:
                 await self.display_subreddit(message, subreddit)

@@ -38,11 +38,9 @@ For example:
 
 discord.py - [Docs](https://discordpy.readthedocs.io) | [GitHub](https://github.com/Rapptz/discord.py) | [Discord Server](https://discord.gg/r3sSKJJ)
 
-PRAW - [Docs](https://praw.readthedocs.io/en/latest/) | [GitHub](https://github.com/praw-dev/praw)
+aiohttp - [Docs](https://docs.aiohttp.org/en/stable/) | [GitHub](https://github.com/aio-libs/aiohttp)
 
-Coloredlogs - [Docs](https://coloredlogs.readthedocs.io/en/latest/) | [GitHub](https://github.com/xolox/python-coloredlogs)
-
-[PyYAML](https://pyyaml.org/)
+PyYAML - [Docs](https://pyyaml.org/) | [GitHub](https://github.com/yaml/pyyaml)
 
 ## Install/Requirements
 
@@ -51,23 +49,28 @@ but if you really want to host it yourself, here are the instructions:
 
 **You must install Python and these libraries to run the bot.**
 
-Install Python 3.8.0 (3.7.x works as well)
+Install Python 3.7+
 
-Install the following libraries with PyPI (pip):
+Install the following libraries with PyPI (pip) OR install from `requirements.txt`:
 
-- `discord.py==1.2.5`
-
-- `praw`
-
-- `coloredlogs`
+- `discord.py>=1.2.5`
 
 - `pyyaml`
 
-- OPTIONAL: `jishaku` [What's this?](https://github.com/Gorialis/jishaku) 
+- `async_timeout`
+
+- OPTIONAL: `jishaku` [What's this?](https://github.com/Gorialis/jishaku)
 
 Next, clone the repository.
 
-Fill in `config.yml` with the required items.
+Create and fill in a `config.yml` file with the required items.
+
+Example:
+
+```yml
+# In a file called config.yml:
+discord_token: "DISCORD-TOKEN-HERE"
+```
 
 Run `bot.py`.
 

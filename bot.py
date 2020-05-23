@@ -54,13 +54,19 @@ class ReLink(commands.Bot):
                 quit()
 
         # Cogs
-        self.cogs_to_load = ["cogs.subreddit", "cogs.redditor", "cogs.settings"]
+        self.cogs_to_load = [
+            "cogs.subreddit",
+            "cogs.redditor",
+            "cogs.settings",
+            "cogs.statistics",
+        ]
 
         # Listeners
         self.add_listener(self.on_mention, "on_message")
 
         # Other Variables
         self.auto_deletion_message = "This message auto-deletes after 30 seconds."
+        self.optout_message = None
         self.reddit_color = 0xFF4301
         self.warning_color = 0xFFCC4D
 
@@ -77,11 +83,15 @@ class ReLink(commands.Bot):
         self.startup_time = d.now()
 
         self.session = aiohttp.ClientSession(loop=self.loop)
-        self.reddit = RedditClient(
-            self.data["reddit_client_id"],
-            self.data["reddit_client_secret"],
-            session=self.session,
-        )
+        # Idk what I'm doing wrong with the auth,
+        # but reddit returns a forbidden error whenever
+        # I try to log in :/
+        # self.reddit = RedditClient(
+        #     self.data["reddit_client_id"],
+        #     self.data["reddit_client_secret"],
+        #     session=self.session,
+        # )
+        self.reddit = RedditClient(session=self.session,)
 
         for cog in self.cogs_to_load:
             self.load_extension(cog)
@@ -116,8 +126,15 @@ class ReLink(commands.Bot):
 
             await message.channel.send(embed=em)
 
+    async def logout(self):
+        self.session.close()
+        super().logout()
+
     async def on_ready(self):
         self.log.info(f"Logged in as {self.user.name} - {self.user.id}")
+
+        if self.optout_message is None:
+            self.optout_message = f"**Opt out of ReLink with `@{self.user} optout`**"
 
     def run(self):
         super().run(self.data["discord_token"])

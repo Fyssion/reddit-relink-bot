@@ -78,9 +78,10 @@ class Subreddit:
 
 
 class RedditClient:
-    def __init__(self, app_id, app_secret, *, loop=None, session=None):
+    def __init__(self, app_id=None, app_secret=None, *, loop=None, session=None):
         self.app_id = app_id
         self.app_secret = app_secret
+        self.log_in = app_id and app_secret
         self.loop = loop or asyncio.get_event_loop()
         self.session = session or aiohttp.ClientSession(loop=self.loop)
 
@@ -91,6 +92,9 @@ class RedditClient:
             return data["error"]
 
     async def get_headers(self):
+        if not self.log_in:
+            return {}
+
         if self.token_expires <= datetime.now():
 
             data = {"grant_type": "client_credentials"}
