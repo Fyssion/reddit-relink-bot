@@ -78,7 +78,6 @@ class Redditor(commands.Cog):
         em.add_field(name="Karma:", value=str(karma))
         args = user.icon_img.split("?")
         icon = args[0]
-        print(icon)
         em.set_thumbnail(url=icon)
         em.set_footer(text=self.bot.auto_deletion_message)
 

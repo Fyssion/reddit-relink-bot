@@ -2,7 +2,7 @@
 *.pyc
 relink/.vscode/settings.json
 .vscode/settings.json
+statistics.json
 opted_out.json
 relink.log
 config.yml
-cogs/utils/testing.py
