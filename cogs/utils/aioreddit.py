@@ -1,29 +1,9 @@
-"""
-This is a simple and incomplete async reddit module. Use at your own risk.
-
-
-The MIT License (MIT)
-
-Copyright (c) 2020 Fyssion
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
-"""
+# MIT License
+# Copyright (c) 2019-2020 Fyssion
+# See LICENSE for license details
+#
+# This is a rather simple async reddit module,
+# but it's good enough for what I need.
 
 import asyncio
 import json
@@ -104,7 +84,6 @@ class RedditClient:
                 async with session.post(ACCESS_TOKEN_URL, data=data) as resp:
                     if resp.status == 200:
                         self.access_data = await resp.json()
-                        print(self.access_data)
                         self.token_expires = datetime.now() + timedelta(
                             seconds=self.access_data["expires_in"]
                         )
@@ -120,14 +99,11 @@ class RedditClient:
         try:
             async with timeout(30.0):
                 headers = await self.get_headers()
-                print(headers)
                 url = SUBREDDIT_URL + query + JSON_URL
                 async with self.session.get(url, headers=headers) as resp:
                     data = await resp.json()
         except asyncio.TimeoutError:
             raise asyncio.TimeoutError(f"Timed out while fetching subreddit {query}")
-
-        print(data, type(data))
 
         if self.error_detector(data):
             return None
