@@ -8,7 +8,7 @@ import discord
 from os import path
 import json
 
-from .utils import is_opted_out
+from .utils.utils import is_opted_out
 
 
 class Settings(commands.Cog):

@@ -12,7 +12,19 @@ from discord.abc import Snowflake
 from typing import Optional, Sequence, Union
 
 
-def checkForHelp(msg):
+def add_to_statistics(bot, relink):
+    stats = bot.statistics
+    if relink == "subreddit":
+        stats["subreddits-relinked"] = int(stats["subreddits-relinked"]) + 1
+    elif relink == "redditor":
+        stats["redditors-relinked"] = int(stats["redditors-relinked"]) + 1
+    else:
+        raise ValueError(
+            f"Incorrect relink type passed. '{relink}' is not a valid relink type."
+        )
+
+
+def check_for_help(msg):
     """
     Check if a subreddit/redditor string contains "help" or "info".
     If it does, return the message below.

@@ -4,13 +4,22 @@
 
 from discord.ext import commands
 import discord
-import praw
-import coloredlogs, logging
+import logging
 import yaml
 import re
 from datetime import datetime as d
+import aiohttp
 
-from cogs.utils import wait_for_deletion
+from cogs.utils.utils import wait_for_deletion
+from cogs.utils.aioreddit import RedditClient
+
+file_logger = logging.getLogger("discord")
+file_logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename="relink.log", encoding="utf-8", mode="w")
+handler.setFormatter(
+    logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+)
+file_logger.addHandler(handler)
 
 
 def get_prefix(client, message):
@@ -30,6 +39,10 @@ class ReLink(commands.Bot):
             help_command=None,
         )
 
+        self.log = logging.getLogger("discord")
+        self.log.setLevel(logging.INFO)
+        self.log.addHandler(logging.StreamHandler())
+
         # Config.yml load
         with open("config.yml", "r") as config:
             try:
@@ -41,22 +54,19 @@ class ReLink(commands.Bot):
                 quit()
 
         # Cogs
-        self.cogsToLoad = ["cogs.subreddit", "cogs.redditor", "cogs.settings"]
+        self.cogs_to_load = [
+            "cogs.subreddit",
+            "cogs.redditor",
+            "cogs.settings",
+            "cogs.statistics",
+        ]
 
         # Listeners
         self.add_listener(self.on_mention, "on_message")
 
-        # Logging
-        self.log = logging.getLogger(__name__)
-        coloredlogs.install(
-            level="DEBUG",
-            logger=self.log,
-            fmt="(%(asctime)s) %(levelname)s %(message)s",
-            datefmt="%m/%d/%y - %H:%M:%S %Z",
-        )
-
         # Other Variables
         self.auto_deletion_message = "This message auto-deletes after 30 seconds."
+        self.optout_message = None
         self.reddit_color = 0xFF4301
         self.warning_color = 0xFFCC4D
 
@@ -64,13 +74,27 @@ class ReLink(commands.Bot):
 
     async def load_all_cogs(self):
         await self.wait_until_ready()
+
+        try:
+            self.load_extension("jishaku")  # For debugging
+        except:
+            pass
+
         self.startup_time = d.now()
-        await self.loginToReddit(
-            self.data["reddit_client_id"], self.data["reddit_client_secret"]
-        )
-        for cog in self.cogsToLoad:
+
+        self.session = aiohttp.ClientSession(loop=self.loop)
+        # Idk what I'm doing wrong with the auth,
+        # but reddit returns a forbidden error whenever
+        # I try to log in :/
+        # self.reddit = RedditClient(
+        #     self.data["reddit_client_id"],
+        #     self.data["reddit_client_secret"],
+        #     session=self.session,
+        # )
+        self.reddit = RedditClient(session=self.session,)
+
+        for cog in self.cogs_to_load:
             self.load_extension(cog)
-        self.load_extension("jishaku")  # For debugging
 
     async def on_mention(self, message):
         """
@@ -98,38 +122,22 @@ class ReLink(commands.Bot):
             em = discord.Embed(
                 description=msg, color=self.reddit_color, timestamp=d.utcnow()
             )
-            em.set_footer(text="Reddit ReLink v1.0.0", icon_url=self.user.avatar_url)
+            em.set_footer(text="Reddit ReLink v2.0.0", icon_url=self.user.avatar_url)
 
-            try:
-                bot_message = await message.channel.send(embed=em)
-            except discord.errors.Forbidden:
-                self.log.error(
-                    f"Bot does not have permission to send messages in channel: '{str(message.channel)}'"
-                )
+            await message.channel.send(embed=em)
 
-    async def loginToReddit(self, id, secret):
-        """
-        Logs the bot into reddit and creates a reddit instance.
-        If the bot isn't logged in, the bot force quits.
-        """
-
-        self.reddit = praw.Reddit(
-            client_id=id, client_secret=secret, user_agent="my user agent"
-        )
-        if self.reddit.read_only == True:
-            self.log.info("Logged into Reddit")
-            return
-
-        self.log.critical("Not logged into Reddit!")
-        await self.logout()
-        quit()
+    async def logout(self):
+        self.session.close()
+        super().logout()
 
     async def on_ready(self):
-
         self.log.info(f"Logged in as {self.user.name} - {self.user.id}")
 
+        if self.optout_message is None:
+            self.optout_message = f"**Opt out of ReLink with `@{self.user} optout`**"
+
     def run(self):
-        super().run(self.data["discord_token"], reconnect=True, bot=True)
+        super().run(self.data["discord_token"])
 
 
 bot = ReLink()

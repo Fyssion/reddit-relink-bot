@@ -8,7 +8,12 @@ import discord
 import prawcore
 
 import re
-from .utils import wait_for_deletion, checkForHelp, is_opted_out
+from .utils.utils import (
+    wait_for_deletion,
+    check_for_help,
+    is_opted_out,
+    add_to_statistics,
+)
 
 
 class Redditor(commands.Cog):
@@ -17,20 +22,20 @@ class Redditor(commands.Cog):
         self.log = self.bot.log
         self.reddit = self.bot.reddit
 
-    def redditorLinkDetector(self, message):
+    def regex_redditor(self, message):
+        args = message.split("u/")
+        afterSlash = " ".join(args[1:])
+        args = afterSlash.split(" ")
+        usr = " ".join(args[0:1])
+
+        usr = re.sub(
+            """[!\.\?\-\'\"\*]""", "", usr
+        )  # Replaces listed characters with a blank
+
+        return usr
+
+    def redditor_link_detector(self, message):
         """Extremely simple algorithm that detects if 'u/' was found in a message and finds the text directly after."""
-
-        def findRedditor(message):
-            args = message.split("u/")
-            afterSlash = " ".join(args[1:])
-            args = afterSlash.split(" ")
-            usr = " ".join(args[0:1])
-
-            usr = re.sub(
-                """[!\.\?\-\'\"\*]""", "", usr
-            )  # Replaces listed characters with a blank
-
-            return usr
 
         urls = re.findall(
             "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
@@ -43,19 +48,15 @@ class Redditor(commands.Cog):
             return
 
         if message.startswith("u/") or message.startswith("/u/"):
-
-            return findRedditor(message)
+            return self.regex_redditor(message)
 
         if " u/" in message or " /u/" in message:
+            return self.regex_redditor(message)
 
-            return findRedditor(message)
-
-    async def findRedditor(self, message, usr):
+    async def display_redditor(self, message, user):
         """
         Basically fetches the redditor, creates the embed, and sends it.
         """
-
-        user = self.reddit.redditor(usr)
 
         if user.is_employee == True:
             emp = " <:employee:634152137445867531>\nThis user is a Reddit employee."
@@ -63,8 +64,10 @@ class Redditor(commands.Cog):
             emp = ""
 
         karma = user.comment_karma + user.link_karma
-        description = f"[u/{user.name}](https://reddit.com/u/{user.name}){emp}{checkForHelp(usr) or ''}"
+        description = f"[u/{user.name}](https://reddit.com/u/{user.name}){emp}{check_for_help(user.name) or ''}"
         url = f"https://reddit.com/u/{user.name}"
+
+        description += "\n\n" + self.bot.optout_message
 
         em = discord.Embed(
             title=user.name,
@@ -73,20 +76,18 @@ class Redditor(commands.Cog):
             color=self.bot.reddit_color,
         )
         em.add_field(name="Karma:", value=str(karma))
-        em.set_thumbnail(url=user.icon_img)
+        args = user.icon_img.split("?")
+        icon = args[0]
+        print(icon)
+        em.set_thumbnail(url=icon)
         em.set_footer(text=self.bot.auto_deletion_message)
 
-        try:
-            bot_message = await message.channel.send(embed=em)
-            self.bot.loop.create_task(
-                wait_for_deletion(
-                    bot_message, user_ids=(message.author.id,), client=self.bot
-                )
+        bot_message = await message.channel.send(embed=em)
+        self.bot.loop.create_task(
+            wait_for_deletion(
+                bot_message, user_ids=(message.author.id,), client=self.bot
             )
-        except discord.errors.Forbidden:
-            self.log.error(
-                f"Bot does not have permission to send messages in channel: '{str(message.channel)}'"
-            )
+        )
 
     async def redditorNotFound(self, message, usr):
         """
@@ -95,23 +96,20 @@ class Redditor(commands.Cog):
 
         self.log.warning(f"Redditor '{usr}' does not exist!")
 
-        msg = f":warning: Redditor `{usr}` does not exist.{checkForHelp(usr) or ''}"
+        msg = f":warning: Redditor `{usr}` does not exist.{check_for_help(usr) or ''}"
+
+        msg += "\n\n" + self.bot.optout_message
 
         em = discord.Embed(description=msg, color=self.bot.warning_color)
 
-        try:
-            await message.channel.send(embed=em, delete_after=7)
-        except discord.errors.Forbidden:
-            self.log.error(
-                f"Bot does not have permission to send messages in channel: '{str(message.channel)}'"
-            )
+        await message.channel.send(embed=em, delete_after=7)
 
     @commands.Cog.listener("on_message")
     async def on_redditor(self, message):
         if is_opted_out(message.author, self.bot):
             return
 
-        usr = self.redditorLinkDetector(message.content)
+        usr = self.redditor_link_detector(message.content)
 
         if usr is not None:
 
@@ -119,20 +117,15 @@ class Redditor(commands.Cog):
 
             # Reddit's user search is absolute trash. It only shows users with 50+ followers.
             # This is my solution
-            user = self.reddit.redditor(usr)
-            try:
-                user.link_karma  # This throws an error if the user does not exist
-                isValidUser = True
-            except prawcore.exceptions.NotFound:
-                isValidUser = False
+            user = await self.reddit.fetch_redditor(usr)
 
-            if isValidUser is True:
-                await self.findRedditor(message, usr)
+            add_to_statistics(self.bot, "redditor")
 
-                return
+            if user:
+                await self.display_redditor(message, user)
 
-            # If the user does not exist
-            await self.redditorNotFound(message, usr)
+            else:
+                await self.redditorNotFound(message, usr)
 
 
 def setup(bot):

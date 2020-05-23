@@ -6,7 +6,12 @@ from discord.ext import commands
 import discord
 
 import re
-from .utils import wait_for_deletion, checkForHelp, is_opted_out
+from .utils.utils import (
+    wait_for_deletion,
+    check_for_help,
+    is_opted_out,
+    add_to_statistics,
+)
 
 
 class Subreddit(commands.Cog):
@@ -36,45 +41,40 @@ class Subreddit(commands.Cog):
                 return "\n\nLooking for [r/woooosh](https://reddit.com/r/woooosh)?"
         return ""
 
-    def redditorLinkDetector(self, message):
+    def regex_subreddit(self, message):
+        args = message.split("r/")
+        afterSlash = " ".join(args[1:])
+        args = afterSlash.split(" ")
+        sub = " ".join(args[0:1])
+
+        sub = re.sub(
+            """[!\.\?\-\'\"\*]""", "", sub
+        )  # Replaces listed characters with a blank
+
+        return sub
+
+    def subreddit_link_detector(self, message):
         """Extremely simple algorithm that detects if 'r/' was found in a message and finds the text directly after."""
-
-        def findRedditor(message):
-            args = message.split("r/")
-            afterSlash = " ".join(args[1:])
-            args = afterSlash.split(" ")
-            sub = " ".join(args[0:1])
-
-            sub = re.sub(
-                """[!\.\?\-\'\"\*]""", "", sub
-            )  # Replaces listed characters with a blank
-
-            return sub
 
         urls = re.findall(
             "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
             message,
         )  # Finds all urls in the message
 
-        if (
-            len(urls) > 0
-        ):  # If the message has any urls, the bot doesnt relink the subreddit
+        # If the message has any urls, the bot doesnt relink the subreddit
+        if len(urls) > 0:
             return
 
         if message.startswith("r/") or message.startswith("/r/"):
-
-            return findRedditor(message)
+            return self.regex_subreddit(message)
 
         if " r/" in message or " /r/" in message:
+            return self.regex_subreddit(message)
 
-            return findRedditor(message)
-
-    async def findSubreddit(self, message, sub):
+    async def display_subreddit(self, message, subreddit):
         """
         Basically fetches the subreddit, creates the embed, and sends it.
         """
-
-        subreddit = self.reddit.subreddit(sub)
 
         if subreddit.over18 == True:
             isNSFW = "\n:warning:Subreddit is NSFW!:warning:"
@@ -82,7 +82,9 @@ class Subreddit(commands.Cog):
             isNSFW = ""
 
         description = f"[r/{subreddit.display_name}](https://reddit.com/r/{subreddit.display_name})\
-            \n{subreddit.public_description}{isNSFW}{self.ifIsWosh}{checkForHelp(sub) or ''}"
+            \n{subreddit.public_description}{isNSFW}{self.ifIsWosh}{check_for_help(subreddit.display_name) or ''}"
+
+        description += "\n\n" + self.bot.optout_message
 
         em_url = f"https://reddit.com/r/{subreddit.display_name}"
 
@@ -105,42 +107,32 @@ class Subreddit(commands.Cog):
         em.set_thumbnail(url=subIcon)
         em.set_footer(text=self.bot.auto_deletion_message)
 
-        try:
-            bot_message = await message.channel.send(embed=em)
-            self.bot.loop.create_task(
-                wait_for_deletion(
-                    bot_message, user_ids=(message.author.id,), client=self.bot
-                )
+        bot_message = await message.channel.send(embed=em)
+        self.bot.loop.create_task(
+            wait_for_deletion(
+                bot_message, user_ids=(message.author.id,), client=self.bot
             )
-        except discord.errors.Forbidden:
-            self.log.error(
-                f"Bot does not have permission to send messages in channel: '{str(message.channel)}'"
-            )
+        )
 
-    async def subredditNotFound(self, message, sub):
+    async def subreddit_not_found(self, message, sub):
         """
         Sends an embed saying the subreddit does not exist.
         """
 
-        msg = f":warning: Subreddit `{sub}` does not exist.{self.ifIsWosh}{checkForHelp(sub) or ''}"
+        msg = f":warning: Subreddit `{sub}` does not exist.{self.ifIsWosh}{check_for_help(sub) or ''}"
+
+        msg += "\n\n" + self.bot.optout_message
 
         em = discord.Embed(description=msg, color=self.bot.warning_color)
 
-        self.log.warning(f"Subreddit '{sub}' does not exist!")
-
-        try:
-            await message.channel.send(embed=em, delete_after=7)
-        except discord.errors.Forbidden:
-            self.log.error(
-                f"Bot does not have permission to send messages in channel: '{str(message.channel)}'"
-            )
+        await message.channel.send(embed=em, delete_after=7)
 
     @commands.Cog.listener("on_message")
     async def on_subreddit(self, message):
         if is_opted_out(message.author, self.bot):
             return
 
-        sub = self.redditorLinkDetector(message.content)
+        sub = self.subreddit_link_detector(message.content)
 
         if sub is not None:
 
@@ -149,18 +141,15 @@ class Subreddit(commands.Cog):
             self.ifIsWosh = self.isWoshDetector(sub)
 
             # Searching for subreddit to see if it exists
-            subreddit_search = self.reddit.subreddits.search_by_name(
-                sub, include_nsfw=True, exact=False
-            )
+            subreddit = await self.reddit.fetch_subreddit(sub)
 
-            if sub in subreddit_search:
+            add_to_statistics(self.bot, "subreddit")
 
-                await self.findSubreddit(message, sub)
+            if subreddit:
+                await self.display_subreddit(message, subreddit)
 
-                return
-
-            # If the subreddit is not found in any searches
-            await self.subredditNotFound(message, sub)
+            else:
+                await self.subreddit_not_found(message, sub)
 
 
 def setup(bot):
