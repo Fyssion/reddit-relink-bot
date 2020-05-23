@@ -24,6 +24,28 @@ def add_to_statistics(bot, relink):
         )
 
 
+def is_wosh_detector(sub):
+    """
+    My solution for people linking 'wosh' (or any other varient of 'woooosh')
+    Returns a message linking to the actual woooosh subreddit if a user tries to link to a varient.
+    """
+    if (
+        sub == "whosh"
+        or sub == "wosh"
+        or sub == "whoosh"
+        or sub == "whooosh"
+        or sub == "woosh"
+        or sub == "wooosh"
+        or "oooo" in sub
+        or "wosh" in sub
+        or "whosh" in sub
+        and sub != "woooosh"
+    ):
+        if sub != "woooosh":
+            return "\n\nLooking for [r/woooosh](https://reddit.com/r/woooosh)?"
+    return ""
+
+
 def check_for_help(msg):
     """
     Check if a subreddit/redditor string contains "help" or "info".

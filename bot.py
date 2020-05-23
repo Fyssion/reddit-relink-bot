@@ -13,6 +13,7 @@ import aiohttp
 from cogs.utils.utils import wait_for_deletion
 from cogs.utils.aioreddit import RedditClient
 
+
 file_logger = logging.getLogger("discord")
 file_logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename="relink.log", encoding="utf-8", mode="w")
@@ -29,7 +30,7 @@ def get_prefix(client, message):
     return commands.when_mentioned_or(*prefixes)(client, message)
 
 
-class ReLink(commands.Bot):
+class RedditRelink(commands.Bot):
     def __init__(self):
         super().__init__(
             command_prefix=get_prefix,
@@ -55,8 +56,7 @@ class ReLink(commands.Bot):
 
         # Cogs
         self.cogs_to_load = [
-            "cogs.subreddit",
-            "cogs.redditor",
+            "cogs.relink",
             "cogs.settings",
             "cogs.statistics",
         ]
@@ -99,7 +99,7 @@ class ReLink(commands.Bot):
     async def on_mention(self, message):
         """
         Responds to a mention with a tiny "help menu."
-        It's not really a help menu.
+        It's not really a help menu, and it's not so tiny anymore.
         """
 
         if (
@@ -111,11 +111,11 @@ class ReLink(commands.Bot):
                 "Hey there, "
                 + message.author.mention
                 + "!\nI'm a bot that detects any Reddit links and relinks them in clickable fashion!"
+                f"\n\n**To globally opt out of ReLink, use `@{self.user} optout`**\nYou can opt back in with `@{self.user} optin`"
                 "\n\nI support relinking subreddits (`r/SUBREDDIT`) and users (`u/USER`)."
                 "\n\nEvery message I send (excluding this one) will be automatically deleted after 30 seconds."
                 "\nIf you want to delete the message sooner, just click the :x: reaction."
                 "\nIf you want to keep the message, just react with :pushpin:, and I'll save it for you."
-                f"\n\n**To globally opt out of ReLink, use `@{self.user} optout`**\nYou can opt back in with `@{self.user} optin`"
                 "\n\n[Visit my GitHub Repository for more info.](https://github.com/fyssion/reddit-relink-bot)"
             )
 
@@ -128,7 +128,7 @@ class ReLink(commands.Bot):
 
     async def logout(self):
         self.session.close()
-        super().logout()
+        await super().logout()
 
     async def on_ready(self):
         self.log.info(f"Logged in as {self.user.name} - {self.user.id}")
@@ -140,5 +140,5 @@ class ReLink(commands.Bot):
         super().run(self.data["discord_token"])
 
 
-bot = ReLink()
+bot = RedditRelink()
 bot.run()

@@ -11,47 +11,112 @@ from .utils.utils import (
     check_for_help,
     is_opted_out,
     add_to_statistics,
+    is_wosh_detector,
 )
 
 
-class Subreddit(commands.Cog):
+class Relink(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.log = self.bot.log
         self.reddit = self.bot.reddit
 
-    def isWoshDetector(self, sub):
-        """
-        My solution for people linking 'wosh' (or any other varient of 'woooosh')
-        Returns a message linking to the actual woooosh subreddit if a user tries to link to a varient.
-        """
-        if (
-            sub == "whosh"
-            or sub == "wosh"
-            or sub == "whoosh"
-            or sub == "whooosh"
-            or sub == "woosh"
-            or sub == "wooosh"
-            or "oooo" in sub
-            or "wosh" in sub
-            or "whosh" in sub
-            and sub != "woooosh"
-        ):
-            if sub != "woooosh":
-                return "\n\nLooking for [r/woooosh](https://reddit.com/r/woooosh)?"
-        return ""
-
-    def regex_subreddit(self, message):
-        args = message.split("r/")
+    def regex(self, message, letter):
+        args = message.split(f"{letter}/")
         afterSlash = " ".join(args[1:])
         args = afterSlash.split(" ")
-        sub = " ".join(args[0:1])
+        usr = " ".join(args[0:1])
 
-        sub = re.sub(
-            """[!\.\?\-\'\"\*]""", "", sub
-        )  # Replaces listed characters with a blank
+        # Replaces listed characters with a blank
+        usr = re.sub("""[!\.\?\-\'\"\*]""", "", usr)
 
-        return sub
+        return usr
+
+    def link_detector(self, message, letter):
+        """Extremely simple algorithm that detects if 'u/' was found in a message and finds the text directly after."""
+
+        urls = re.findall(
+            "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+            message,
+        )  # Finds all urls in the message
+
+        if (
+            len(urls) > 0
+        ):  # If the message has any urls, the bot doesnt relink the subreddit
+            return
+
+        if message.startswith(f"{letter}/") or message.startswith(f"/{letter}/"):
+            return self.regex(message, letter)
+
+        if f" {letter}/" in message or f" /{letter}/" in message:
+            return self.regex(message, letter)
+
+    async def display_redditor(self, message, user):
+        """
+        Basically fetches the redditor, creates the embed, and sends it.
+        """
+
+        if user.is_employee == True:
+            emp = " <:employee:634152137445867531>\nThis user is a Reddit employee."
+        else:
+            emp = ""
+
+        karma = user.comment_karma + user.link_karma
+        description = f"[u/{user.name}](https://reddit.com/u/{user.name}){emp}{check_for_help(user.name) or ''}"
+        url = f"https://reddit.com/u/{user.name}"
+
+        description += "\n\n" + self.bot.optout_message
+
+        em = discord.Embed(
+            title=user.name,
+            description=description,
+            url=url,
+            color=self.bot.reddit_color,
+        )
+        em.add_field(name="Karma:", value=str(karma))
+        args = user.icon_img.split("?")
+        icon = args[0]
+        em.set_thumbnail(url=icon)
+        em.set_footer(text=self.bot.auto_deletion_message)
+
+        bot_message = await message.channel.send(embed=em)
+        self.bot.loop.create_task(
+            wait_for_deletion(
+                bot_message, user_ids=(message.author.id,), client=self.bot
+            )
+        )
+
+    async def redditor_not_found(self, message, usr):
+        """
+        Sends an embed saying the redditor does not exist.
+        """
+
+        msg = f":warning: Redditor `{usr}` does not exist.{check_for_help(usr) or ''}"
+
+        msg += "\n\n" + self.bot.optout_message
+
+        em = discord.Embed(description=msg, color=self.bot.warning_color)
+
+        await message.channel.send(embed=em, delete_after=7)
+
+    @commands.Cog.listener("on_message")
+    async def redditor_relinker(self, message):
+        if is_opted_out(message.author, self.bot):
+            return
+
+        usr = self.link_detector(message.content, "u")
+
+        if usr is not None:
+            # Reddit's user search is absolute trash. It only shows users with 50+ followers.
+            # This is my solution
+            user = await self.reddit.fetch_redditor(usr)
+
+            add_to_statistics(self.bot, "redditor")
+
+            if user:
+                await self.display_redditor(message, user)
+
+            else:
+                await self.redditorNotFound(message, usr)
 
     def subreddit_link_detector(self, message):
         """Extremely simple algorithm that detects if 'r/' was found in a message and finds the text directly after."""
@@ -128,17 +193,14 @@ class Subreddit(commands.Cog):
         await message.channel.send(embed=em, delete_after=7)
 
     @commands.Cog.listener("on_message")
-    async def on_subreddit(self, message):
+    async def subreddit_relinker(self, message):
         if is_opted_out(message.author, self.bot):
             return
 
-        sub = self.subreddit_link_detector(message.content)
+        sub = self.link_detector(message.content, "r")
 
         if sub is not None:
-
-            self.log.info(str(message.author) + " tried to link to '" + sub + "'")
-
-            self.ifIsWosh = self.isWoshDetector(sub)
+            self.ifIsWosh = is_wosh_detector(sub)
 
             # Searching for subreddit to see if it exists
             subreddit = await self.reddit.fetch_subreddit(sub)
@@ -153,4 +215,4 @@ class Subreddit(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Subreddit(bot))
+    bot.add_cog(Relink(bot))
