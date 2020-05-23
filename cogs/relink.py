@@ -44,7 +44,9 @@ class Relink(commands.Cog):
         ):  # If the message has any urls, the bot doesnt relink the subreddit
             return
 
-        if message.startswith(f"{letter}/") or message.startswith(f"/{letter}/"):
+        if (message.startswith(f"{letter}/") and len(message) > 2) or (
+            message.startswith(f"/{letter}/") and len(message) > 3
+        ):
             return self.regex(message, letter)
 
         if f" {letter}/" in message or f" /{letter}/" in message:
