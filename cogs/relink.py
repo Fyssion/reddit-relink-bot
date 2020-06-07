@@ -27,7 +27,7 @@ class Relink(commands.Cog):
         usr = " ".join(args[0:1])
 
         # Replaces listed characters with a blank
-        usr = re.sub("""[!\.\?\-\'\"\*]""", "", usr)
+        usr = re.sub("""[!\.\?\-\'\"\*\,]""", "", usr)
 
         return usr
 
