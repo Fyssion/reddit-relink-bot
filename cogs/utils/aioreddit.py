@@ -13,6 +13,7 @@ import aiohttp
 from async_timeout import timeout
 
 
+# Specify the endpoints (urls)
 BASE_URL = "https://www.reddit.com"
 SUBREDDIT_URL = BASE_URL + "/r/"
 REDDITOR_URL = BASE_URL + "/u/"
@@ -22,6 +23,8 @@ ACCESS_TOKEN_URL = BASE_URL + "/api/v1/access_token"
 
 class Redditor:
     def __init__(self, data):
+        # Here we go though the json data and convert
+        # each value into an attribute.
         data = data["data"]
         self.data = data
         self.is_employee = data["is_employee"]
@@ -58,79 +61,71 @@ class Subreddit:
 
 
 class RedditClient:
-    def __init__(self, app_id=None, app_secret=None, *, loop=None, session=None):
-        self.app_id = app_id
-        self.app_secret = app_secret
-        self.log_in = app_id and app_secret
+    def __init__(self, *, loop=None, session=None):
+        self.log_in = None
         self.loop = loop or asyncio.get_event_loop()
         self.session = session or aiohttp.ClientSession(loop=self.loop)
-
-        self.token_expires = datetime.now()
 
     def error_detector(self, data):
         if "error" in data:
             return data["error"]
 
     async def get_headers(self):
+        # You can ignore this section
         if not self.log_in:
             return {}
+        else:
+            raise NotImplementedError
 
-        if self.token_expires <= datetime.now():
-
-            data = {"grant_type": "client_credentials"}
-
-            auth = aiohttp.BasicAuth(login=self.app_id, password=self.app_secret)
-            async with aiohttp.ClientSession(auth=auth) as session:
-                async with session.post(ACCESS_TOKEN_URL, data=data) as resp:
-                    if resp.status == 200:
-                        self.access_data = await resp.json()
-                        self.token_expires = datetime.now() + timedelta(
-                            seconds=self.access_data["expires_in"]
-                        )
-                    else:
-                        raise Exception("Invalid user data.")
-
-        return {
-            "Authorization": f"{self.access_data['token_type']} {self.access_data['access_token']}",
-            "User-Agent": "aioreddit by Fyssion ",
-        }
-
-    async def fetch_subreddit(self, query):
+    async def _fetch(self, url):
         try:
+            # Set a timeout of 30 seconds
             async with timeout(30.0):
                 headers = await self.get_headers()
-                url = SUBREDDIT_URL + query + JSON_URL
-                async with self.session.get(url, headers=headers) as resp:
-                    data = await resp.json()
-        except asyncio.TimeoutError:
-            raise asyncio.TimeoutError(f"Timed out while fetching subreddit {query}")
 
+                # Fetch the url
+                async with self.session.get(url, headers=headers) as resp:
+                    # If the get request failed in some way, return None
+                    if resp.status != 200:
+                        return None
+
+                    # Convert the data to json format
+                    data = await resp.json()
+
+        # If the request times out, raise a better error
+        except asyncio.TimeoutError:
+            raise asyncio.TimeoutError(f"Timed out while fetching '{url}'")
+
+        # This is probably useless, but just in case
         if self.error_detector(data):
             return None
 
+        return data
+
+    async def fetch_subreddit(self, query):
+        url = SUBREDDIT_URL + query + JSON_URL
+
+        data = await self._fetch(url)
+
+        # Subreddit kind is t5
         if data["kind"] != "t5":
             return None
 
+        # Convert the json data into something more usable
         subreddit = Subreddit(data)
 
         return subreddit
 
     async def fetch_redditor(self, query):
-        try:
-            async with timeout(30.0):
-                headers = await self.get_headers()
-                url = REDDITOR_URL + query + JSON_URL
-                async with self.session.get(url, headers=headers) as resp:
-                    data = await resp.json()
-        except asyncio.TimeoutError:
-            raise asyncio.TimeoutError(f"Timed out while fetching redditor {query}")
+        url = REDDITOR_URL + query + JSON_URL
 
-        if self.error_detector(data):
-            return None
+        data = await self._fetch(url)
 
+        # Redditor kind is t2
         if data["kind"] != "t2":
             return None
 
-        subreddit = Redditor(data)
+        # Convert the json data into something more usable
+        redditor = Redditor(data)
 
-        return subreddit
+        return redditor
