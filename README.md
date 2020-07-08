@@ -1,5 +1,12 @@
 # Reddit ReLink
 
+## Archive Note
+
+I am done maintaining this project, so I have put it in an archived state.
+The Reddit ReLink Discord bot will no longer be online.
+However, if you wish to use the bot yourself, there are hosting instrucitons below.
+Please note that the source code may become very quickly outdated due to changes with Discord.
+
 ## Invite ReLink [![Discord Bots](https://top.gg/api/widget/status/618868626945998849.svg)](https://top.gg/bot/618868626945998849)
 
 [Invite Reddit ReLink to your server!](https://discordapp.com/api/oauth2/authorize?client_id=618868626945998849&permissions=18432&scope=bot)
